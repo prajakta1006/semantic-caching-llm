@@ -1,0 +1,5 @@
+# Core Dependencies for Semantic Caching LLM Foundation
+sentence-transformers>=3.0.0
+scipy>=1.17.0,<=1.17.1
+scikit-learn>=1.5.0
+pytest>=8.0.0

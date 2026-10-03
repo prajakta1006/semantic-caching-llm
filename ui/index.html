@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SemCache AI — Semantic Caching for LLM</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- CSS Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar">
+      <!-- Logo Header -->
+      <div class="brand-header">
+        <div class="brand-logo">
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+            <path d="M16 2L4 14L16 26L28 14L16 2Z" fill="url(#brandGrad1)" />
+            <path d="M16 8L8 16L16 24L24 16L16 8Z" fill="url(#brandGrad2)" />
+            <defs>
+              <linearGradient id="brandGrad1" x1="4" y1="2" x2="28" y2="26" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#818cf8"/>
+                <stop offset="1" stop-color="#6366f1"/>
+              </linearGradient>
+              <linearGradient id="brandGrad2" x1="8" y1="8" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#c7d2fe"/>
+                <stop offset="1" stop-color="#a5b4fc"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <div class="brand-title">SemCache AI</div>
+          <div class="brand-subtitle">DAA Cascade Flow</div>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <button class="btn-new-chat" id="btn-new-chat" onclick="resetChat()">
+        <span class="plus-icon">+</span>
+        <span>New query</span>
+      </button>
+
+      <!-- Navigation Section -->
+      <div class="nav-group">
+        <div class="nav-header">Main</div>
+        <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
+          <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+          </svg>
+          <span>Templates</span>
+        </button>
+        <button class="nav-item" data-view="history" onclick="switchView('history')">
+          <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>Saved chat</span>
+        </button>
+        <button class="nav-item" data-view="cache" onclick="switchView('cache')">
+          <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <span>Cache Memory</span>
+        </button>
+        <button class="nav-item" data-view="metrics" onclick="switchView('metrics')">
+          <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>Metrics & History</span>
+        </button>
+        <button class="nav-item" data-view="team" onclick="switchView('team')">
+          <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span>Team Integrations</span>
+        </button>
+      </div>
+
+      <!-- Topics / Modules Section -->
+      <div class="nav-group">
+        <div class="nav-header">Team Modules</div>
+        <div class="topic-item"><span class="topic-dot topic-purple"></span> Person 1: TanTan (Foundation)</div>
+        <div class="topic-item"><span class="topic-dot topic-teal"></span> Person 2: Dhano (Cache)</div>
+        <div class="topic-item"><span class="topic-dot topic-orange"></span> Person 3: Praj (Cascade)</div>
+        <div class="topic-item"><span class="topic-dot topic-blue"></span> Person 4: Andi (Evaluation)</div>
+      </div>
+
+      <!-- Footer User / Credit Card -->
+      <div class="sidebar-footer">
+        <div class="user-profile-card">
+          <div class="user-avatar">
+            <div class="avatar-icon">⚡</div>
+          </div>
+          <div class="user-details">
+            <div class="user-name">TanTan Lead</div>
+            <div class="user-email">tantan@semcache.local</div>
+          </div>
+          <div class="user-arrow">▾</div>
+        </div>
+
+        <div class="credit-banner">
+          <div class="credit-info">
+            <strong id="sidebar-credits-saved">$0.024</strong> Cost Saved
+          </div>
+          <div class="credit-sub" id="sidebar-cache-stat">
+            3 Cache Hits • 85% Sim Threshold
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="main-content">
+      <!-- Top Navigation Header -->
+      <header class="top-header">
+        <div class="search-bar-wrapper">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="global-search" placeholder="Search cache, queries, models..." oninput="handleGlobalSearch(event)">
+          <div class="shortcut-pill">⌘ K</div>
+        </div>
+
+        <div class="header-actions">
+          <button class="btn-ghost" onclick="showTeamModal()">Invite</button>
+          <button class="btn-ghost" onclick="showHelpModal()">? Help</button>
+        </div>
+      </header>
+
+      <!-- Dashboard View (Matches screenshot layout) -->
+      <section class="content-body" id="view-dashboard">
+        
+        <!-- Hero Greetings Header -->
+        <div class="hero-section">
+          <h1 class="hero-title">Hello, TanTan</h1>
+          <h2 class="hero-subtitle">How I can help you?</h2>
+        </div>
+
+        <!-- Workspaces Filter Pills -->
+        <div class="workspaces-container">
+          <div class="workspaces-header">
+            <span class="section-label">Workspaces</span>
+            <span class="more-dots">•••</span>
+          </div>
+          <div class="workspace-pills">
+            <button class="pill" onclick="filterWorkspace('all', this)">All</button>
+            <button class="pill active" onclick="filterWorkspace('team', this)">Team</button>
+            <button class="pill" onclick="filterWorkspace('cache', this)">Semantic Cache</button>
+            <button class="pill" onclick="filterWorkspace('cascade', this)">Cascade Logic</button>
+            <button class="pill" onclick="filterWorkspace('benchmark', this)">Benchmarks</button>
+          </div>
+        </div>
+
+        <!-- Templates Carousel / Grid Section -->
+        <div class="templates-section">
+          <div class="templates-header">
+            <span class="section-label">Templates</span>
+            <div class="header-tools">
+              <button class="tool-btn" title="Add custom test template" onclick="openAddTemplateModal()">+</button>
+              <span class="more-dots">•••</span>
+            </div>
+          </div>
+
+          <div class="templates-grid" id="templates-grid">
+            <!-- Template Card 1 -->
+            <div class="template-card" onclick="runTemplateQuery('What is machine learning?')">
+              <div class="card-top">
+                <div class="card-badge badge-purple">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </div>
+                <span class="more-dots">•••</span>
+              </div>
+              <div class="template-text">What is machine learning?</div>
+              <div class="template-footer">
+                <span class="tag-badge">Baseline LLM Miss</span>
+              </div>
+            </div>
+
+            <!-- Template Card 2 -->
+            <div class="template-card" onclick="runTemplateQuery('Can you explain what machine learning is?')">
+              <div class="card-top">
+                <div class="card-badge badge-teal">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                  </svg>
+                </div>
+                <span class="more-dots">•••</span>
+              </div>
+              <div class="template-text">Can you explain what machine learning is?</div>
+              <div class="template-footer">
+                <div class="avatar-stack">
+                  <span class="mini-avatar av1" title="Dhano">D</span>
+                  <span class="mini-avatar av2" title="TanTan">T</span>
+                  <span class="mini-avatar av3" title="Praj">P</span>
+                </div>
+                <span class="tag-badge hit-badge">Cache Hit (0.92 Sim)</span>
+              </div>
+            </div>
+
+            <!-- Template Card 3 (Empty / Plus) -->
+            <div class="template-card template-card-add" onclick="runTemplateQuery('What is semantic caching in LLM systems?')">
+              <div class="card-top">
+                <div class="card-badge badge-orange">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                  </svg>
+                </div>
+                <span class="more-dots">•••</span>
+              </div>
+              <div class="template-text">What is semantic caching in LLM systems?</div>
+              <div class="template-footer">
+                <span class="tag-badge cascade-badge">Cascade Decision</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Query Stream / Response Cards Area -->
+        <div class="stream-section" id="stream-section">
+          <div class="stream-empty" id="stream-empty">
+            <div class="empty-icon">✨</div>
+            <div class="empty-title">Pipeline Ready</div>
+            <div class="empty-desc">Click any template card above or enter a query in the prompt bar below to see real-time cache evaluation, cascade routing, and latency statistics.</div>
+          </div>
+          <div class="stream-container" id="stream-container"></div>
+        </div>
+
+        <!-- Floating Bottom Search & Prompt Bar -->
+        <div class="floating-prompt-container">
+          <form class="prompt-bar" id="query-form" onsubmit="handleFormSubmit(event)">
+            <svg class="prompt-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input 
+              type="text" 
+              id="prompt-input" 
+              placeholder="Ask or search for anything use @ to tag a specific assistant"
+              autocomplete="off"
+            >
+            <button type="submit" class="btn-send" id="btn-send" aria-label="Send Query">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+              </svg>
+            </button>
+          </form>
+        </div>
+
+      </section>
+
+      <!-- Cache Memory View -->
+      <section class="content-body view-hidden" id="view-cache">
+        <div class="hero-section">
+          <h1 class="hero-title">Cache Memory Store</h1>
+          <h2 class="hero-subtitle">Dhano's Vector Cache Inspection & Entries</h2>
+        </div>
+        <div class="card-panel">
+          <div class="panel-header">
+            <div class="panel-title">Stored Cache Keys & Vectors</div>
+            <button class="btn-danger" onclick="clearCacheStore()">Clear Cache</button>
+          </div>
+          <div class="table-responsive">
+            <table class="custom-table" id="cache-table">
+              <thead>
+                <tr>
+                  <th>Stored Query</th>
+                  <th>Cached Response Preview</th>
+                  <th>Sim Score</th>
+                  <th>Hits</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody id="cache-table-body">
+                <tr><td colspan="5" class="text-center">No queries cached yet. Execute a query to populate.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Metrics View -->
+      <section class="content-body view-hidden" id="view-metrics">
+        <div class="hero-section">
+          <h1 class="hero-title">Evaluation & Benchmarking</h1>
+          <h2 class="hero-subtitle">Andi's Telemetry, Hit Rate & Cost Savings</h2>
+        </div>
+        <div class="metrics-cards-grid">
+          <div class="metric-card">
+            <div class="metric-label">Total Queries</div>
+            <div class="metric-value" id="metric-total">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Cache Hit Rate</div>
+            <div class="metric-value" id="metric-hit-rate">0.0%</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Avg Pipeline Latency</div>
+            <div class="metric-value" id="metric-latency">0.00 ms</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Total Cost Saved</div>
+            <div class="metric-value" id="metric-cost-saved">$0.000</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Team Integrations View -->
+      <section class="content-body view-hidden" id="view-team">
+        <div class="hero-section">
+          <h1 class="hero-title">Team Integrations</h1>
+          <h2 class="hero-subtitle">Architecture & Module Extension Points</h2>
+        </div>
+        <div class="team-grid">
+          <div class="team-card">
+            <div class="team-tag tag-purple">Person 1: TanTan</div>
+            <div class="team-role">Project Setup & Pipeline Foundation</div>
+            <p class="team-desc">Centralized configurations, data models, abstract base interfaces, and end-to-end routing coordination.</p>
+            <div class="code-path">src/pipeline.py • src/config.py</div>
+          </div>
+          <div class="team-card">
+            <div class="team-tag tag-teal">Person 2: Dhano</div>
+            <div class="team-role">Semantic Cache Module</div>
+            <p class="team-desc">Vector embedding models (all-MiniLM-L6-v2), cosine similarity calculation, and LRU/LFU cache policies.</p>
+            <div class="code-path">implements CacheInterface</div>
+          </div>
+          <div class="team-card">
+            <div class="team-tag tag-orange">Person 3: Praj</div>
+            <div class="team-role">Cascade / Decision Logic</div>
+            <p class="team-desc">Cost-benefit optimization, dynamic routing thresholds, and model cascading algorithms.</p>
+            <div class="code-path">implements DecisionInterface</div>
+          </div>
+          <div class="team-card">
+            <div class="team-tag tag-blue">Person 4: Andi</div>
+            <div class="team-role">Evaluation & Benchmarking</div>
+            <p class="team-desc">Automated testing, latency distributions, hit-rate vs threshold sensitivity analysis.</p>
+            <div class="code-path">implements EvaluatorInterface</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
