@@ -1,18 +1,21 @@
-"""Shared component contracts for the semantic caching pipeline.
+"""Shared interfaces for the semantic caching pipeline.
 
-These interfaces define stable boundaries between team members.
+These interfaces define the stable boundaries between team members.
 
 Ownership:
-    - TanTan: semantic cache, embeddings, similarity
+    - TanTan: semantic cache, embeddings, similarity search
     - Dhano: LLM integration and pipeline orchestration
     - Praj: cache optimization policies
-    - Andi: evaluation and benchmarking
+    - Andi: evaluation, datasets, and benchmarking
+
+Important:
+    The pipeline depends only on these interfaces. It does not depend on
+    another teammate's implementation details.
 """
 
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from src.config import AppConfig
 from src.models import (
     CacheEntry,
     EvaluationMetrics,
@@ -33,12 +36,16 @@ class QueryPreprocessorInterface(ABC):
 class CacheInterface(ABC):
     """Stable contract for TanTan's semantic cache.
 
-    The pipeline only knows this interface.
     The implementation may internally use:
         - embeddings
         - cosine similarity
         - FAISS
-        - LRU/TTL/frequency policies
+        - LRU
+        - TTL
+        - frequency
+        - eviction policies
+
+    None of those implementation details should appear in the pipeline.
     """
 
     @abstractmethod
@@ -61,31 +68,7 @@ class CacheInterface(ABC):
 
     @abstractmethod
     def size(self) -> int:
-        """Return the current cache size."""
-
-    # Compatibility aliases
-    def lookup(
-        self,
-        query: str,
-        threshold: float,
-    ) -> Optional[CacheEntry]:
-        """Backward-compatible alias for get()."""
-        return self.get(query, threshold)
-
-    def insert(
-        self,
-        query: str,
-        response: str,
-        embedding: Optional[list[float]] = None,
-        metadata: Optional[dict] = None,
-    ) -> None:
-        """Backward-compatible alias for put()."""
-        self.put(
-            query=query,
-            response=response,
-            embedding=embedding,
-            metadata=metadata,
-        )
+        """Return the current number of cached entries."""
 
 
 class LLMInterface(ABC):
@@ -115,24 +98,3 @@ class EvaluatorInterface(ABC):
     @abstractmethod
     def get_metrics(self) -> EvaluationMetrics:
         """Return accumulated evaluation metrics."""
-
-
-# Kept only for compatibility with the existing foundation.
-class CascadeInterface(ABC):
-    """Optional decision/routing extension.
-
-    This is not a separate core team responsibility anymore.
-    It can remain as an extension point without forcing cascade
-    logic into Dhano's pipeline.
-    """
-
-    @abstractmethod
-    def decide(
-        self,
-        request: QueryRequest,
-        config: AppConfig,
-    ):
-        """Return an optional routing decision."""
-
-
-DecisionInterface = CascadeInterface
