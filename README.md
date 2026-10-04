@@ -1,199 +1,210 @@
-# Semantic Caching for LLM — Cost-Benefit Cascade Flow
+# Semantic Caching for LLM - Cost-Benefit Cascade Flow
 
-A DAA (Design and Analysis of Algorithms) project exploring algorithmic trade-offs between semantic similarity caching, cost-benefit cascading, and inference latency for Large Language Model queries.
+A DAA (Design and Analysis of Algorithms) course project that studies how semantic caching, routing decisions, and evaluation metrics can reduce repeated LLM cost and latency.
 
----
+## Current Status
 
-## 1. Problem Being Solved
+The TanTan foundation is implemented and tested. The project currently provides:
 
-Large Language Models (LLMs) are computationally expensive, exhibit high latency, and incur per-token financial costs for repeated or semantically identical queries. 
+- A modular end-to-end pipeline coordinator.
+- Clean interfaces for cache, cascade, LLM, and evaluator components.
+- Dependency injection so teammates can plug in their modules later.
+- A working exact-match mock cache.
+- A deterministic mock LLM.
+- A default cascade placeholder.
+- A basic metrics recorder.
+- CLI demo, lightweight web API, and existing UI.
+- Unit/integration tests for the foundation.
 
-Traditional exact-match caching fails when queries differ slightly in wording (e.g., *"What is machine learning?"* vs *"Can you explain machine learning?"*). 
+The following teammate-owned algorithms are intentionally not implemented yet:
 
-This project implements:
-1. **Semantic Caching:** Vector similarity search to match and reuse cached responses for semantically equivalent queries.
-2. **Cost-Benefit Cascade Flow:** An algorithmic decision engine that evaluates query complexity, cache similarity confidence, and cost thresholds to determine whether to return cached results, invoke a lightweight fallback, or route to a full LLM.
-3. **Evaluation Framework:** Empirical metrics tracking hit rates, latency reductions, and cost savings under various threshold settings.
+- Semantic embedding search.
+- Cosine similarity or FAISS/vector indexing.
+- Cost-benefit cascade optimization.
+- Full benchmarking/evaluation analysis.
 
----
+## Architecture
 
-## 2. High-Level Flow Architecture
-
+```text
+User Query
+    |
+    v
+Query Preprocessing
+    |
+    v
+Cache.get(query, threshold)
+    |
+    +-- HIT --> Return cached response
+    |
+    +-- MISS
+          |
+          v
+      Cascade.decide(query)
+          |
+          v
+      LLM.generate(query, selected_model)
+          |
+          v
+      Cache.put(query, response)
+          |
+          v
+      Evaluator.record(...)
+          |
+          v
+      Return response
 ```
-                 User Query
-                     │
-                     ▼
-             Query Processing
-                     │
-                     ▼
-           Semantic Cache Check
-                     │
-              [ Cache Hit? ]
-             ┌───────┴───────┐
-      YES    │               │    NO
-             ▼               ▼
-     Return Cached   Cascade / Cost-Benefit
-       Response            Decision
-                             │
-                             ▼
-                        LLM / API Call
-                             │
-                             ▼
-                    Store Result in Cache
-                             │
-                             ▼
-                      Return Response
-                             │
-                             ▼
-                    Evaluation / Metrics
-```
 
----
+## Team Responsibilities
 
-## 3. Team Responsibilities & Code Locations
+| Person | Responsibility | Integration Point |
+| --- | --- | --- |
+| TanTan | Foundation, interfaces, pipeline, configuration, integration testing | `src/pipeline.py`, `src/interfaces.py`, `src/components.py`, `src/config.py` |
+| Dhano | Real semantic cache, embeddings, similarity search, threshold behavior | Implement `CacheInterface` |
+| Praj | Cost-benefit cascade and model/path routing | Implement `CascadeInterface` |
+| Andi | Evaluation, benchmarks, metrics, experimental analysis | Implement `EvaluatorInterface` |
 
-This project is built collaboratively with clean modular boundaries:
+## Project Structure
 
-| Teammate | Role | Responsibility | Module Location / Extension Point |
-| :--- | :--- | :--- | :--- |
-| **Person 1: TanTan** | Project Lead & Core Foundation | Repository setup, configuration, data models, integration pipeline, and CLI runner | `src/config.py`, `src/models.py`, `src/pipeline.py`, `run.py` |
-| **Person 2: Dhano** | Semantic Cache Module | Vector embeddings (`sentence-transformers`), similarity indexing (FAISS / Cosine), cache eviction (LRU/LFU) | Implement `CacheInterface` in `src/cache.py` (plugs into `src/pipeline.py`) |
-| **Person 3: Praj** | Cascade / Decision Engine | Cost-benefit algorithm, query complexity scoring, and dynamic routing logic | Implement `DecisionInterface` in `src/cascade.py` (plugs into `src/pipeline.py`) |
-| **Person 4: Andi** | Evaluation & Benchmarking | Metrics collection, benchmark datasets, cost-reduction analysis, and automated test suite | Implement `EvaluatorInterface` in `src/evaluator.py`, `tests/` |
-
----
-
-## 4. Project Structure
-
-```
+```text
 semantic-caching-llm/
-│
-├── .venv/                   # Virtual environment (ignored by git)
-├── cache/                   # Local cache directory
-│   └── .gitkeep
-│
-├── src/
-│   ├── __init__.py          # Package initializer
-│   ├── config.py            # Centralized settings & environment variables
-│   ├── models.py            # Typed dataclasses (Request, CacheEntry, Decision, Metrics)
-│   ├── pipeline.py          # Core pipeline coordinator & abstract interfaces
-│   └── main.py              # CLI demo execution logic
-│
-├── tests/
-│   ├── __init__.py
-│   └── test_setup.py        # Foundation & environment verification tests
-│
-├── requirements.txt         # Core dependencies
-├── .gitignore               # Git ignore rules
-├── README.md                # Project documentation
-└── run.py                   # Root execution script
+|-- cache/
+|   `-- .gitkeep
+|-- src/
+|   |-- __init__.py
+|   |-- components.py      # Default/mock component implementations
+|   |-- config.py          # Environment-backed settings
+|   |-- interfaces.py      # Component contracts for teammates
+|   |-- main.py            # CLI demo
+|   |-- models.py          # Dataclasses used across components
+|   |-- pipeline.py        # TanTan orchestration layer
+|   `-- server.py          # Lightweight API/static UI server
+|-- tests/
+|   |-- __init__.py
+|   |-- test_pipeline_integration.py
+|   `-- test_setup.py
+|-- ui/
+|   |-- app.js
+|   |-- index.html
+|   `-- style.css
+|-- requirements.txt
+|-- run.py
+`-- README.md
 ```
 
----
+## Setup
 
-## 5. Getting Started (Windows PowerShell)
-
-### Step 1: Clone Repository
 ```powershell
-git clone <repository-url>
-cd semantic-caching-llm
-```
-
-### Step 2: Create & Activate Virtual Environment
-```powershell
-# Create virtual environment (Python 3.10+)
 python -m venv .venv
-
-# Activate in Windows PowerShell
 .venv\Scripts\Activate.ps1
-```
-*(If PowerShell restricts script execution, run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` and then run the activate command again).*
-
-### Step 3: Install Dependencies
-```powershell
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
----
+## Run
 
-## 6. How to Run
+CLI demo:
 
-### Run the Web UI (Modern Aesthetic Dashboard)
-```powershell
-python run.py --ui
-```
-*Opens `http://localhost:8000` with the custom modern AI assistant UI interface.*
-
-### Run the CLI Demo
 ```powershell
 python run.py
 ```
 
-### Run Unit Tests
+Web UI:
+
+```powershell
+python run.py --ui
+```
+
+Then open:
+
+```text
+http://localhost:8000
+```
+
+Tests:
+
 ```powershell
 python -m pytest
 ```
-Or for verbose test logs:
-```powershell
-python -m pytest -v
+
+## Interfaces
+
+The main contracts live in `src/interfaces.py`.
+
+Cache:
+
+```python
+class CacheInterface:
+    def get(self, query: str, threshold: float) -> CacheEntry | None: ...
+    def put(self, query: str, response: str, embedding=None, metadata=None) -> None: ...
+    def size(self) -> int: ...
 ```
 
----
+Cascade:
 
-## 7. Configuration (`src/config.py`)
+```python
+class CascadeInterface:
+    def decide(self, request: QueryRequest, config: AppConfig) -> DecisionResult: ...
+```
 
-Settings can be customized via environment variables or modified directly in `src/config.py`:
+LLM:
 
-| Variable | Default Value | Description |
-| :--- | :--- | :--- |
-| `EMBEDDING_MODEL_NAME` | `all-MiniLM-L6-v2` | HuggingFace sentence embedding model |
-| `SIMILARITY_THRESHOLD` | `0.85` | Cosine similarity threshold for cache hits |
-| `CASCADE_COST_THRESHOLD`| `0.05` | Maximum threshold before escalating query |
-| `CACHE_DIR` | `./cache` | Local directory for persisted cache data |
-| `DEFAULT_LLM_MODEL` | `mock-llm-v1` | Target LLM model name |
-| `DEBUG` | `false` | Enable verbose debug logging |
+```python
+class LLMInterface:
+    def generate(self, query: str, model: str | None = None) -> LLMResponse: ...
+```
 
----
+Evaluator:
 
-## 8. Troubleshooting `sentence-transformers` & `scipy` on Windows
+```python
+class EvaluatorInterface:
+    def record(self, request: QueryRequest, response: PipelineResponse, latency_ms: float) -> None: ...
+    def get_metrics(self) -> EvaluationMetrics: ...
+```
 
-If you encounter DLL or import errors such as:
-`ImportError: DLL load failed while importing _biasedurn: An Application Control policy has blocked this file`
+The pipeline accepts injected components:
 
-### Resolution:
-1. **Scipy Version Compatibility:**
-   On Python 3.14+ on Windows with Application Control or Smart App Control, ensure `scipy` is pinned to `1.17.1`:
-   ```powershell
-   pip install scipy==1.17.1
-   ```
-2. **Verify Sentence Transformers:**
-   ```powershell
-   python -c "from sentence_transformers import SentenceTransformer; print('Sentence Transformers OK')"
-   ```
-3. **Unblock Downloaded DLLs (if blocked by Windows):**
-   ```powershell
-   Get-ChildItem -Path .venv\Lib\site-packages\scipy -Recurse -Filter *.pyd | Unblock-File
-   ```
+```python
+pipeline = SemanticCachingPipeline(
+    cache=YourCache(),
+    cascade=YourCascade(),
+    llm=YourLLM(),
+    evaluator=YourEvaluator(),
+)
+```
 
----
+## Configuration
 
-## 9. How Teammates Should Add Code
+Settings are read from environment variables with safe local defaults.
 
-### For Dhano (`CacheInterface`):
-1. Create `src/cache.py`.
-2. Inherit from `src.pipeline.CacheInterface`.
-3. Implement `lookup(query, threshold)`, `insert(query, response, embedding, metadata)`, and `size()`.
-4. Inject your cache class into `SemanticCachingPipeline(cache=YourCache())`.
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `EMBEDDING_MODEL_NAME` | `all-MiniLM-L6-v2` | Future embedding model target for Dhano |
+| `SIMILARITY_THRESHOLD` | `0.85` | Cache hit threshold |
+| `CASCADE_COST_THRESHOLD` | `0.05` | Future cascade cost setting for Praj |
+| `CASCADE_QUALITY_THRESHOLD` | `0.75` | Future cascade quality setting for Praj |
+| `CACHE_DIR` | `./cache` | Local cache directory |
+| `LLM_PROVIDER` | `mock` | Future provider selector |
+| `DEFAULT_LLM_MODEL` | `mock-llm-v1` | Default model name |
+| `LLM_API_KEY_ENV` | `LLM_API_KEY` | Name of env var a future API LLM can read |
+| `LLM_TIMEOUT_SECONDS` | `30` | Future API timeout |
+| `DEBUG` | `false` | Debug flag |
 
-### For Praj (`DecisionInterface`):
-1. Create `src/cascade.py`.
-2. Inherit from `src.pipeline.DecisionInterface`.
-3. Implement `decide(request, cache_match, config) -> DecisionResult`.
-4. Inject into `SemanticCachingPipeline(decision_engine=YourDecisionEngine())`.
+No paid API key is required for the current demo. `LLM_PROVIDER=mock` is the default.
 
-### For Andi (`EvaluatorInterface`):
-1. Create `src/evaluator.py`.
-2. Inherit from `src.pipeline.EvaluatorInterface`.
-3. Implement `record(request, response, latency_ms)` and `get_metrics()`.
-4. Add automated benchmark tests in `tests/`.
+## Current Limitations
+
+- `ExactMatchCache` is only an in-memory exact-match adapter.
+- It does not generate embeddings.
+- It does not compute cosine similarity.
+- It does not use FAISS or a vector database.
+- `DefaultCascade` always routes cache misses to the default mock LLM.
+- `BasicEvaluator` records only simple session metrics.
+- The UI remains a lightweight demo and was not redesigned.
+
+## Handoff Notes
+
+Dhano should implement `CacheInterface` in a new module such as `src/cache.py`. The pipeline will call only `get`, `put`, and `size`.
+
+Praj should implement `CascadeInterface` in a new module such as `src/cascade.py`. Return `DecisionResult` with `metadata["selected_model"]` when selecting a model/path.
+
+Andi should implement `EvaluatorInterface` in a new module such as `src/evaluator.py`. Use `record(...)` for telemetry and `get_metrics()` for reports.

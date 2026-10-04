@@ -12,6 +12,8 @@ def print_banner() -> None:
     print("=" * 70)
     print(f"  Embedding Model Target: {config.embedding_model_name}")
     print(f"  Similarity Threshold : {config.similarity_threshold}")
+    print(f"  LLM Provider         : {config.llm_provider}")
+    print(f"  Default LLM Model    : {config.default_llm_model}")
     print(f"  Cache Directory      : {config.cache_dir}")
     print("=" * 70 + "\n")
 
@@ -32,11 +34,16 @@ def run_demo() -> None:
     for idx, query in enumerate(test_queries, start=1):
         print(f"--- Query {idx}: '{query}' ---")
         response = pipeline.process_query(query)
+        status = "CACHE HIT" if response.source == "cache" else "CACHE MISS"
+        selected_model = response.metadata.get("model", "cache")
 
+        print(f"  [Cache Status]    : {status}")
         print(f"  [Source]          : {response.source.upper()}")
         print(f"  [Decision Route]  : {response.decision.route if response.decision else 'N/A'}")
+        print(f"  [Selected Model]  : {selected_model}")
         print(f"  [Similarity Score]: {response.similarity_score}")
         print(f"  [Latency]         : {response.latency_ms:.2f} ms")
+        print(f"  [Decision Reason] : {response.decision.reason if response.decision else 'N/A'}")
         print(f"  [Response Text]   : {response.response_text}")
         print()
 

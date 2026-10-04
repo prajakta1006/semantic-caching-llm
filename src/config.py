@@ -44,12 +44,25 @@ class AppConfig:
     )
 
     # LLM Settings (Mock/API)
+    llm_provider: str = field(
+        default_factory=lambda: os.getenv("LLM_PROVIDER", "mock")
+    )
     default_llm_model: str = field(
         default_factory=lambda: os.getenv("DEFAULT_LLM_MODEL", "mock-llm-v1")
+    )
+    llm_api_key_env: str = field(
+        default_factory=lambda: os.getenv("LLM_API_KEY_ENV", "LLM_API_KEY")
+    )
+    llm_timeout_seconds: float = field(
+        default_factory=lambda: float(os.getenv("LLM_TIMEOUT_SECONDS", "30"))
     )
 
     def __post_init__(self) -> None:
         """Ensure cache directory exists."""
+        if not 0.0 <= self.similarity_threshold <= 1.0:
+            raise ValueError("SIMILARITY_THRESHOLD must be between 0.0 and 1.0")
+        if self.llm_timeout_seconds <= 0:
+            raise ValueError("LLM_TIMEOUT_SECONDS must be greater than 0")
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
 
