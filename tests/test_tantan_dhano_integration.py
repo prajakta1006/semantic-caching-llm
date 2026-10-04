@@ -15,8 +15,17 @@ class FakeEmbeddingGenerator:
         }
 
     def encode(self, text: str):
+        """Return a deterministic embedding.
+
+        Normalizing the input makes the fake embedding generator
+        behave consistently with the query preprocessing used
+        by the pipeline.
+        """
+
+        normalized_text = text.strip().lower()
+
         return self.embeddings.get(
-            text,
+            normalized_text,
             [0.0, 1.0],
         )
 
@@ -32,6 +41,7 @@ class SpyLLM:
         query: str,
         model=None,
     ) -> LLMResponse:
+        """Simulate an LLM response."""
 
         self.calls += 1
 
@@ -47,6 +57,7 @@ class SpyLLM:
 
 
 def test_tantan_cache_integrates_with_dhano_pipeline():
+    """Verify semantic cache and pipeline integration."""
 
     cache = SemanticCache(
         embedding_generator=FakeEmbeddingGenerator()
@@ -74,6 +85,10 @@ def test_tantan_cache_integrates_with_dhano_pipeline():
 
     assert cache.size() == 1
 
+    assert first.response_text == (
+        "Machine learning answer"
+    )
+
     # ---------------------------------------------------------
     # Second query:
     # Semantically similar → Cache HIT
@@ -89,8 +104,18 @@ def test_tantan_cache_integrates_with_dhano_pipeline():
         "Machine learning answer"
     )
 
+    assert second.similarity_score is not None
+
     assert second.similarity_score >= 0.85
 
+    # ---------------------------------------------------------
     # LLM must NOT be called again.
+    # ---------------------------------------------------------
 
     assert llm.calls == 1
+
+    # ---------------------------------------------------------
+    # Cache should still contain only one entry.
+    # ---------------------------------------------------------
+
+    assert cache.size() == 1
