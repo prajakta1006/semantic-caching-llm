@@ -1,18 +1,20 @@
-"""Embedding generation for semantic cache.
+"""Embedding generation for the semantic cache.
 
 Owned by TanTan.
 
 This module converts text queries into vector representations.
-The semantic cache uses these vectors for similarity matching.
+The semantic cache uses these vectors for semantic matching.
+
+The SentenceTransformer dependency is imported lazily so that
+unit tests can use injected fake embedding generators without
+requiring the full ML stack to load.
 """
 
-from typing import List
-
-from sentence_transformers import SentenceTransformer
+from typing import List, Optional
 
 
 class EmbeddingGenerator:
-    """Generate embeddings for semantic cache queries."""
+    """Generate embeddings using SentenceTransformer."""
 
     def __init__(
         self,
@@ -20,20 +22,57 @@ class EmbeddingGenerator:
     ) -> None:
         """Initialize the embedding model.
 
-        The model is loaded once and reused for all queries.
+        The model is imported and loaded only when a real
+        EmbeddingGenerator is created.
         """
 
-        self.model_name = model_name
-        self.model = SentenceTransformer(model_name)
+        if not model_name:
+            raise ValueError(
+                "model_name cannot be empty"
+            )
 
-    def encode(self, text: str) -> List[float]:
+        self.model_name = model_name
+
+        self.model = self._load_model(
+            model_name
+        )
+
+    @staticmethod
+    def _load_model(
+        model_name: str,
+    ):
+        """Load SentenceTransformer lazily."""
+
+        try:
+            from sentence_transformers import (
+                SentenceTransformer,
+            )
+        except ImportError as exc:
+            raise RuntimeError(
+                "SentenceTransformer could not be imported. "
+                "Check the sentence-transformers installation "
+                "and its dependencies."
+            ) from exc
+
+        return SentenceTransformer(
+            model_name
+        )
+
+    def encode(
+        self,
+        text: str,
+    ) -> List[float]:
         """Convert one text query into an embedding vector."""
 
         if not isinstance(text, str):
-            raise TypeError("text must be a string")
+            raise TypeError(
+                "text must be a string"
+            )
 
         if not text.strip():
-            raise ValueError("text cannot be empty")
+            raise ValueError(
+                "text cannot be empty"
+            )
 
         embedding = self.model.encode(
             text,
@@ -53,7 +92,8 @@ class EmbeddingGenerator:
             return []
 
         if any(
-            not isinstance(text, str) or not text.strip()
+            not isinstance(text, str)
+            or not text.strip()
             for text in texts
         ):
             raise ValueError(
