@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "group": "machine_learning",
+    "query": "What is machine learning?",
+    "expected_semantic_group": "machine_learning"
+  },
+  {
+    "id": 2,
+    "group": "machine_learning",
+    "query": "Define machine learning",
+    "expected_semantic_group": "machine_learning"
+  },
+  {
+    "id": 3,
+    "group": "machine_learning",
+    "query": "Explain machine learning",
+    "expected_semantic_group": "machine_learning"
+  },
+  {
+    "id": 4,
+    "group": "machine_learning",
+    "query": "What does machine learning mean?",
+    "expected_semantic_group": "machine_learning"
+  },
+  {
+    "id": 5,
+    "group": "machine_learning",
+    "query": "How does machine learning work?",
+    "expected_semantic_group": "machine_learning"
+  },
+  {
+    "id": 6,
+    "group": "semantic_caching",
+    "query": "What is semantic caching?",
+    "expected_semantic_group": "semantic_caching"
+  },
+  {
+    "id": 7,
+    "group": "semantic_caching",
+    "query": "Define semantic caching",
+    "expected_semantic_group": "semantic_caching"
+  },
+  {
+    "id": 8,
+    "group": "semantic_caching",
+    "query": "Explain semantic caching",
+    "expected_semantic_group": "semantic_caching"
+  },
+  {
+    "id": 9,
+    "group": "semantic_caching",
+    "query": "How does semantic caching work?",
+    "expected_semantic_group": "semantic_caching"
+  },
+  {
+    "id": 10,
+    "group": "semantic_caching",
+    "query": "What does semantic cache mean?",
+    "expected_semantic_group": "semantic_caching"
+  },
+  {
+    "id": 11,
+    "group": "algorithms",
+    "query": "What is an algorithm?",
+    "expected_semantic_group": "algorithms"
+  },
+  {
+    "id": 12,
+    "group": "algorithms",
+    "query": "Define an algorithm",
+    "expected_semantic_group": "algorithms"
+  },
+  {
+    "id": 13,
+    "group": "algorithms",
+    "query": "Explain algorithms",
+    "expected_semantic_group": "algorithms"
+  },
+  {
+    "id": 14,
+    "group": "algorithms",
+    "query": "What does an algorithm mean?",
+    "expected_semantic_group": "algorithms"
+  },
+  {
+    "id": 15,
+    "group": "algorithms",
+    "query": "What are algorithms used for?",
+    "expected_semantic_group": "algorithms"
+  },
+  {
+    "id": 16,
+    "group": "databases",
+    "query": "What is a database?",
+    "expected_semantic_group": "databases"
+  },
+  {
+    "id": 17,
+    "group": "databases",
+    "query": "Define a database",
+    "expected_semantic_group": "databases"
+  },
+  {
+    "id": 18,
+    "group": "databases",
+    "query": "Explain databases",
+    "expected_semantic_group": "databases"
+  },
+  {
+    "id": 19,
+    "group": "databases",
+    "query": "What does a database do?",
+    "expected_semantic_group": "databases"
+  },
+  {
+    "id": 20,
+    "group": "databases",
+    "query": "Why are databases used?",
+    "expected_semantic_group": "databases"
+  },
+  {
+    "id": 21,
+    "group": "networking",
+    "query": "What is computer networking?",
+    "expected_semantic_group": "networking"
+  },
+  {
+    "id": 22,
+    "group": "networking",
+    "query": "Define computer networking",
+    "expected_semantic_group": "networking"
+  },
+  {
+    "id": 23,
+    "group": "networking",
+    "query": "Explain computer networks",
+    "expected_semantic_group": "networking"
+  },
+  {
+    "id": 24,
+    "group": "networking",
+    "query": "What is networking?",
+    "expected_semantic_group": "networking"
+  },
+  {
+    "id": 25,
+    "group": "networking",
+    "query": "How does computer networking work?",
+    "expected_semantic_group": "networking"
+  },
+  {
+    "id": 26,
+    "group": "other",
+    "query": "What is photosynthesis?",
+    "expected_semantic_group": "other"
+  },
+  {
+    "id": 27,
+    "group": "other",
+    "query": "What is gravity?",
+    "expected_semantic_group": "other"
+  },
+  {
+    "id": 28,
+    "group": "other",
+    "query": "What is encryption?",
+    "expected_semantic_group": "other"
+  },
+  {
+    "id": 29,
+    "group": "other",
+    "query": "What is cloud computing?",
+    "expected_semantic_group": "other"
+  },
+  {
+    "id": 30,
+    "group": "other",
+    "query": "What is an operating system?",
+    "expected_semantic_group": "other"
+  }
+]

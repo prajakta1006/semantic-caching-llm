@@ -34,8 +34,22 @@ Flow:
                      Capacity / LRU Check
 """
 
+import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 from src.cache_optimizer import CacheOptimizer
 from src.config import config
+from src.evaluator import EvaluationTracker
 from src.pipeline import SemanticCachingPipeline
 from src.semantic_cache import SemanticCache
 
@@ -430,8 +444,11 @@ def main():
         "[*] Initializing Dhano's LLM pipeline..."
     )
 
+    evaluator = EvaluationTracker()
+
     pipeline = SemanticCachingPipeline(
         cache=cache,
+        evaluator=evaluator,
     )
 
     print(
@@ -450,6 +467,10 @@ def main():
         "[+] Praj cache optimizer connected."
     )
 
+    print(
+        "[+] Andi evaluation tracker connected."
+    )
+
     print()
     print("=" * 76)
     print("                       INTERACTIVE DEMO")
@@ -465,6 +486,10 @@ def main():
 
     print(
         " Type 'stats' to view session statistics."
+    )
+
+    print(
+        " Type 'benchmark' to run evaluation benchmark."
     )
 
     print(
@@ -530,6 +555,20 @@ def main():
                 total_llm_calls=total_llm_calls,
                 cache=cache,
             )
+
+            continue
+
+        if command == "benchmark":
+
+            from evaluation.benchmark import (
+                print_benchmark_report,
+                run_benchmark,
+            )
+
+            print()
+            print("[*] Running benchmark suite...")
+            bench_results = run_benchmark()
+            print_benchmark_report(bench_results)
 
             continue
 
