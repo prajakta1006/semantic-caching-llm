@@ -58,9 +58,9 @@ Cache.get(query, threshold)
 
 | Person | Responsibility | Integration Point |
 | --- | --- | --- |
-| Tanishka | Foundation, interfaces, pipeline, configuration, integration testing | `src/pipeline.py`, `src/interfaces.py`, `src/components.py`, `src/config.py` |
-| Dhanashree | Real semantic cache, embeddings, similarity search, threshold behavior | Implement `CacheInterface` |
-| Prajaka | Cost-benefit cascade and model/path routing | Implement `CascadeInterface` |
+| Tanishka | integration testing, threshold behavior, cosine similarity  | `src/pipeline.py`, `src/interfaces.py`, `src/components.py`, `src/config.py` |
+| Dhanashree | LLM Foundation & Integration, pipeline, query processing and cache-LLM flow | Implement `CacheInterface` |
+| Prajakta | Cache Optimization - LRU, TTL, replacement policy, complexity | Implement CacheInterface' |
 | Anuja | Evaluation, benchmarks, metrics, experimental analysis | Implement `EvaluatorInterface` |
 
 ## Project Structure
