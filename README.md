@@ -4,7 +4,7 @@ A DAA (Design and Analysis of Algorithms) course project that studies how semant
 
 ## Current Status
 
-The TanTan foundation is implemented and tested. The project currently provides:
+The foundation is implemented and tested. The project currently provides:
 
 - A modular end-to-end pipeline coordinator.
 - Clean interfaces for cache, cascade, LLM, and evaluator components.
@@ -58,10 +58,10 @@ Cache.get(query, threshold)
 
 | Person | Responsibility | Integration Point |
 | --- | --- | --- |
-| TanTan | Foundation, interfaces, pipeline, configuration, integration testing | `src/pipeline.py`, `src/interfaces.py`, `src/components.py`, `src/config.py` |
-| Dhano | Real semantic cache, embeddings, similarity search, threshold behavior | Implement `CacheInterface` |
-| Praj | Cost-benefit cascade and model/path routing | Implement `CascadeInterface` |
-| Andi | Evaluation, benchmarks, metrics, experimental analysis | Implement `EvaluatorInterface` |
+| Tanishka | Foundation, interfaces, pipeline, configuration, integration testing | `src/pipeline.py`, `src/interfaces.py`, `src/components.py`, `src/config.py` |
+| Dhanashree | Real semantic cache, embeddings, similarity search, threshold behavior | Implement `CacheInterface` |
+| Prajaka | Cost-benefit cascade and model/path routing | Implement `CascadeInterface` |
+| Anuja | Evaluation, benchmarks, metrics, experimental analysis | Implement `EvaluatorInterface` |
 
 ## Project Structure
 
