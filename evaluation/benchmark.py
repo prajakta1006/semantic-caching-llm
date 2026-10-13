@@ -1,9 +1,9 @@
-"""Benchmark script for semantic cache evaluation owned by Andi.
+﻿"""Benchmark script for semantic cache evaluation owned by Andi.
 
 Runs baseline (NO CACHE) vs cached experiment on evaluation dataset,
 computes comparative metrics, prints tabular reports, and saves JSON/CSV results.
 """
-
+import time
 import csv
 import json
 import os
@@ -104,7 +104,9 @@ def run_benchmark(
         q_id = item.get("id")
         group = item.get("group", "unknown")
 
+        start_time = time.perf_counter()
         response = cached_pipeline.process_query(q_str)
+        measured_latency_ms = (time.perf_counter() - start_time) * 1000.0
 
         cached_query_details.append(
             {
@@ -116,7 +118,7 @@ def run_benchmark(
                     response.decision.route if response.decision else "UNKNOWN"
                 ),
                 "similarity_score": response.similarity_score,
-                "latency_ms": response.latency_ms,
+                "latency_ms": measured_latency_ms,
                 "estimated_cost": (
                     response.decision.estimated_cost
                     if response.decision
@@ -141,7 +143,14 @@ def run_benchmark(
     c_hit_rate_pct = cached_metrics.hit_rate * 100.0
     c_llm_calls = cached_metrics.cache_misses
     c_llm_avoided = cached_metrics.cache_hits
-    c_avg_lat = cached_metrics.avg_latency_ms
+
+    c_avg_lat = (
+        sum(d["latency_ms"] for d in cached_query_details)
+        / len(cached_query_details)
+        if cached_query_details
+        else 0.0
+    )
+
     c_total_lat = sum(d["latency_ms"] for d in cached_query_details)
     c_cost = (
         cached_metrics.metadata.get("total_estimated_cost")
@@ -188,6 +197,7 @@ def run_benchmark(
 
     results_data = {
         "experiment": {
+	    "llm_mode": "MockLLM (simulated; no real API calls)",
             "embedding_model": config.embedding_model_name,
             "embedding_mode": embedding_mode,
             "similarity_threshold": similarity_threshold,
@@ -258,7 +268,7 @@ def run_benchmark(
                         "group": row["group"],
                         "query": row["query"],
                         "baseline_source": row["baseline_source"],
-                        "baseline_latency_ms": f"{row['baseline_latency_ms']:.2f}",
+                        "baseline_latency_ms": f"{row['baseline_latency_ms']:.4f}",
                         "baseline_cost": f"{row['baseline_cost']:.6f}",
                         "cached_source": row["cached_source"],
                         "cached_similarity_score": (
@@ -266,7 +276,7 @@ def run_benchmark(
                             if row["cached_similarity_score"] is not None
                             else "N/A"
                         ),
-                        "cached_latency_ms": f"{row['cached_latency_ms']:.2f}",
+                        "cached_latency_ms": f"{row['cached_latency_ms']:.4f}",
                         "cached_cost": f"{row['cached_cost']:.6f}",
                     }
                 )
@@ -290,7 +300,7 @@ def print_benchmark_report(results: Dict[str, Any]) -> None:
     print(f"Threshold        : {exp['similarity_threshold']}")
     print(f"Cache Capacity   : {exp['cache_capacity']}")
     print(f"Eviction Policy  : {exp['eviction_policy']}")
-
+    print(f"LLM Mode         : {exp['llm_mode']}")
     print("-" * 60)
     print("WITHOUT CACHE")
     print("-" * 60)
@@ -315,7 +325,7 @@ def print_benchmark_report(results: Dict[str, Any]) -> None:
     print("IMPACT")
     print("-" * 60)
     print(f"LLM Calls Reduced: {comp['llm_calls_reduced_pct']:.2f}%")
-    print(f"Latency Change   : {comp['latency_change_pct']:.2f}%")
+    print(f"Latency Change (Mock Mode): {comp['latency_change_pct']:.2f}%")
     print(f"Cost Reduction   : {comp['cost_reduction_pct']:.2f}%")
     print(f"Estimated Savings: ${comp['estimated_savings']:.4f}")
     print("=" * 60)

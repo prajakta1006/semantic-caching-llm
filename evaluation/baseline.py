@@ -3,7 +3,7 @@
 Evaluates pipeline performance when all queries bypass the semantic cache
 and are routed directly to the LLM.
 """
-
+import time
 from typing import Any, Dict, List, Optional, Union
 
 from src.evaluator import EvaluationTracker
@@ -49,7 +49,9 @@ def run_baseline(
             group = "unknown"
             q_id = None
 
+        start_time = time.perf_counter()
         response = pipeline.process_query(query_str)
+        measured_latency_ms = (time.perf_counter() - start_time) * 1000.0
 
         query_details.append(
             {
@@ -60,7 +62,7 @@ def run_baseline(
                 "decision_route": (
                     response.decision.route if response.decision else "UNKNOWN"
                 ),
-                "latency_ms": response.latency_ms,
+                "latency_ms": measured_latency_ms,
                 "estimated_cost": (
                     response.decision.estimated_cost
                     if response.decision
@@ -76,7 +78,13 @@ def run_baseline(
         "total_queries": metrics.total_queries,
         "llm_calls": metrics.cache_misses,
         "total_latency_ms": sum(d["latency_ms"] for d in query_details),
-        "avg_latency_ms": metrics.avg_latency_ms,
+
+        "avg_latency_ms": (
+            sum(d["latency_ms"] for d in query_details) / len(query_details)
+            if query_details
+            else 0.0
+        ),
+
         "estimated_cost": (
             metrics.metadata.get("total_estimated_cost")
             or metrics.metadata.get("estimated_cost_with_caching", 0.0)
