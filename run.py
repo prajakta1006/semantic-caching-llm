@@ -46,13 +46,13 @@ if hasattr(sys.stderr, "reconfigure"):
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
         pass
-
+from src.query_history import save_query
 from src.cache_optimizer import CacheOptimizer
 from src.config import config
 from src.evaluator import EvaluationTracker
 from src.pipeline import SemanticCachingPipeline
 from src.semantic_cache import SemanticCache
-
+from src.mongo_cache_store import MongoCacheStore
 
 # ----------------------------------------------------------------------
 # Fallback embedding generator
@@ -87,14 +87,23 @@ class DemoEmbeddingGenerator:
 # ----------------------------------------------------------------------
 
 
+
 def create_cache():
-    """Create TanTan's semantic cache and wrap it with Praj's optimizer."""
+    """Create persistent semantic cache and wrap it with Praj's optimizer."""
+
+    print("[*] Connecting to MongoDB Atlas...")
+
+    # Create one MongoDB store shared by both embedding modes.
+    mongo_store = MongoCacheStore()
+
+    print("[+] MongoDB store initialized.")
 
     print("[*] Initializing TanTan's semantic cache...")
 
     try:
         semantic_cache = SemanticCache(
-            embedding_model_name=config.embedding_model_name
+            embedding_model_name=config.embedding_model_name,
+            store=mongo_store,
         )
 
         print(
@@ -118,7 +127,8 @@ def create_cache():
         )
 
         semantic_cache = SemanticCache(
-            embedding_generator=DemoEmbeddingGenerator()
+            embedding_generator=DemoEmbeddingGenerator(),
+            store=mongo_store,
         )
 
         print(
@@ -130,35 +140,25 @@ def create_cache():
     # --------------------------------------------------------------
     # Praj's cache optimizer
     #
-    # Small capacity is intentional for demonstration.
-    # LRU remains the current eviction policy.
-    # TTL is disabled for the main demo.
+    # MongoDB restores previously saved entries.
+    # Capacity and LRU policies apply to restored entries too.
+    # TTL remains disabled for the main demo.
     # --------------------------------------------------------------
 
     optimizer = CacheOptimizer(
-        cache=semantic_cache,
-        max_size=3,
-        ttl_seconds=None,
-    )
+    cache=semantic_cache,
+    max_size=3,
+    ttl_seconds=3600,
+)
 
-    print(
-        "[+] Praj cache optimizer connected."
-    )
-
-    print(
-        "[+] Cache capacity : 3 entries"
-    )
-
-    print(
-        "[+] Eviction policy : LRU"
-    )
-
-    print(
-        "[+] TTL             : Disabled"
-    )
+    print("[+] Praj cache optimizer connected.")
+    print("[+] MongoDB persistence enabled.")
+    print(f"[+] Restored cache entries: {optimizer.size()}")
+    print("[+] Cache capacity : 3 entries")
+    print("[+] Eviction policy : LRU")
+    print("[+] TTL             : 3600 seconds (testing)")
 
     return optimizer, embedding_mode
-
 
 # ----------------------------------------------------------------------
 # Header
@@ -571,7 +571,7 @@ def main():
             print_benchmark_report(bench_results)
 
             continue
-
+        save_query(raw_query)
         previous_cache_size = cache.size()
 
         response = pipeline.process_query(

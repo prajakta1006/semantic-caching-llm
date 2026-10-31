@@ -1,3 +1,4 @@
+
 """Semantic cache implementation.
 
 Owned by TanTan.
@@ -16,7 +17,7 @@ This module intentionally does NOT implement:
     - evaluation
     - LLM calls
 
-Those responsibilities belong to Praj, Andi, and Dhano.
+Those responsibilities belong to Praj, Anuja, and Dhano.
 """
 
 from typing import List, Optional
@@ -26,7 +27,7 @@ from src.embeddings import EmbeddingGenerator
 from src.interfaces import CacheInterface
 from src.models import CacheEntry
 from src.similarity import cosine_similarity
-
+import math
 
 class SemanticCache(CacheInterface):
     """In-memory semantic cache using vector similarity."""
@@ -35,17 +36,9 @@ class SemanticCache(CacheInterface):
         self,
         embedding_model_name: Optional[str] = None,
         embedding_generator: Optional[EmbeddingGenerator] = None,
+        store=None,
     ) -> None:
-        """Initialize the semantic cache.
-
-        Args:
-            embedding_model_name:
-                Name of the SentenceTransformer model.
-
-            embedding_generator:
-                Optional injected embedding generator.
-                This is useful for testing and future extensions.
-        """
+        """Initialize the semantic cache with optional persistence."""
 
         model_name = (
             embedding_model_name
@@ -57,7 +50,19 @@ class SemanticCache(CacheInterface):
             or EmbeddingGenerator(model_name)
         )
 
+        # Optional persistence backend, such as MongoCacheStore.
+        # When no store is supplied, the cache remains in memory only.
+        self.store = store
         self._entries: List[CacheEntry] = []
+
+        # Restore previously persisted entries when a store is supplied.
+        if self.store is not None:
+            self._entries = self.store.load_entries()
+
+    def _persist_entry(self, entry: CacheEntry) -> None:
+        """Persist only the newly added or updated cache entry."""
+        if self.store is not None:
+            self.store.save_entry(entry)
 
     def get(
         self,
@@ -134,6 +139,7 @@ class SemanticCache(CacheInterface):
             metadata=dict(best_entry.metadata),
         )
 
+    
     def put(
         self,
         query: str,
@@ -141,40 +147,64 @@ class SemanticCache(CacheInterface):
         embedding: Optional[List[float]] = None,
         metadata: Optional[dict] = None,
     ) -> None:
-        """Store a query-response pair in the semantic cache.
+        """Store a validated query-response pair in the semantic cache.
 
         If an embedding is not supplied, it is generated automatically.
         """
 
+    # Validate query
         if not isinstance(query, str):
-            raise TypeError(
-                "query must be a string"
-            )
+            raise TypeError("query must be a string")
 
         if not query.strip():
-            raise ValueError(
-                "query cannot be empty"
-            )
+            raise ValueError("query cannot be empty")
 
+    # Validate response
         if not isinstance(response, str):
-            raise TypeError(
-                "response must be a string"
-            )
+            raise TypeError("response must be a string")
 
+        if not response.strip():
+            raise ValueError("response cannot be empty")
+
+    # Generate embedding if not supplied
         if embedding is None:
-            embedding = (
-                self.embedding_generator.encode(query)
-            )
+            embedding = self.embedding_generator.encode(query)
 
+    # Validate embedding
+        if not isinstance(embedding, (list, tuple)):
+            raise TypeError("embedding must be a list or tuple of numbers")
+
+        if not embedding:
+            raise ValueError("embedding cannot be empty")
+
+        validated_embedding = []
+
+        for value in embedding:
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise TypeError("embedding values must be numeric")
+
+            if not math.isfinite(value):
+                raise ValueError("embedding values must be finite")
+
+            validated_embedding.append(float(value))
+
+    # Validate metadata
+        if metadata is not None and not isinstance(metadata, dict):
+            raise TypeError("metadata must be a dictionary")
+
+    # Create cache entry
         entry = CacheEntry(
             query=query,
             response=response,
-            embedding=list(embedding),
+            embedding=validated_embedding,
             similarity_score=0.0,
             metadata=dict(metadata or {}),
         )
 
+    # Store in memory and MongoDB
         self._entries.append(entry)
+        self._persist_entry(entry)
+
 
     def size(self) -> int:
         """Return the number of cached entries."""
@@ -189,6 +219,20 @@ class SemanticCache(CacheInterface):
 
         self._entries.clear()
 
+        if self.store is not None:
+            self.store.clear()
+
+
+    def remove(self, query: str) -> None:
+        """Remove an exact query from memory and persistent storage."""
+        self._entries = [
+            entry for entry in self._entries
+            if entry.query != query
+        ]
+
+        if self.store is not None:
+            self.store.delete_entry(query)
+
     def entries(self) -> List[CacheEntry]:
         """Return a copy of the current cache entries.
 
@@ -196,3 +240,18 @@ class SemanticCache(CacheInterface):
         """
 
         return list(self._entries)
+
+    def update_metadata(
+        self,
+        query: str,
+        last_accessed: float,
+        access_count: int,
+    ) -> None:
+        """Update and persist the optimizer metadata for an entry."""
+
+        for entry in self._entries:
+            if entry.query == query:
+                entry.last_accessed = last_accessed
+                entry.access_count = access_count
+                self._persist_entry(entry)
+                return
