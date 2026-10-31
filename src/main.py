@@ -1,15 +1,6 @@
-"""Command-line demonstration for the semantic caching pipeline.
-
-This entry point intentionally does not implement any teammate's
-algorithm. Components are injected through the pipeline interfaces.
-
-TanTan's semantic cache and Andi's evaluator can be connected here
-once their modules are available.
-"""
-
 from src.config import config
 from src.pipeline import SemanticCachingPipeline
-
+from src.query_history import save_query
 
 def print_banner() -> None:
     """Print project configuration."""
@@ -51,7 +42,7 @@ def run_demo() -> None:
     )
 
     pipeline = SemanticCachingPipeline()
-
+    print("[DEBUG] Cache object:", pipeline.cache)
     print(
         "[+] Pipeline initialized."
     )
@@ -77,11 +68,11 @@ def run_demo() -> None:
         queries,
         start=1,
     ):
-
+    
         print(
             f"--- Query {index}: '{query}' ---"
         )
-
+        save_query(query)
         response = pipeline.process_query(
             query
         )
@@ -112,6 +103,21 @@ def run_demo() -> None:
 
         print()
 
+        print("\n========== SAVED CACHE ENTRIES ==========")
+
+    if pipeline.cache is None:
+        print("Semantic cache is not connected.")
+    else:
+        entries = pipeline.cache.entries()
+
+        if not entries:
+            print("No entries saved.")
+        else:
+            for i, entry in enumerate(entries, start=1):
+                print(f"\n{i}. Query: {entry.query}")
+                print(f"   Response: {entry.response}")
+
+    print("==========================================")
 
 def main() -> None:
     """Application entry point."""
