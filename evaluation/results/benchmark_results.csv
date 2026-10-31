@@ -1,31 +1,31 @@
 id,group,query,baseline_source,baseline_latency_ms,baseline_cost,cached_source,cached_similarity_score,cached_latency_ms,cached_cost
-1,machine_learning,What is machine learning?,llm,0.0379,0.002000,llm,N/A,15.9697,0.002000
-2,machine_learning,Define machine learning,llm,0.0196,0.002000,cache,0.9114,10.0436,0.000000
-3,machine_learning,Explain machine learning,llm,0.0101,0.002000,llm,N/A,23.0037,0.002000
-4,machine_learning,What does machine learning mean?,llm,0.0073,0.002000,cache,0.9443,10.4308,0.000000
-5,machine_learning,How does machine learning work?,llm,0.0074,0.002000,cache,0.8536,10.3656,0.000000
-6,semantic_caching,What is semantic caching?,llm,0.0070,0.002000,llm,N/A,18.5410,0.002000
-7,semantic_caching,Define semantic caching,llm,0.0063,0.002000,cache,0.9638,8.6751,0.000000
-8,semantic_caching,Explain semantic caching,llm,0.0054,0.002000,cache,0.9420,8.7831,0.000000
-9,semantic_caching,How does semantic caching work?,llm,0.0057,0.002000,cache,0.9531,8.9117,0.000000
-10,semantic_caching,What does semantic cache mean?,llm,0.0065,0.002000,cache,0.9159,6.8555,0.000000
-11,algorithms,What is an algorithm?,llm,0.0064,0.002000,llm,N/A,13.2924,0.002000
-12,algorithms,Define an algorithm,llm,0.0092,0.002000,cache,0.9486,6.2314,0.000000
-13,algorithms,Explain algorithms,llm,0.0056,0.002000,llm,N/A,16.8217,0.002000
-14,algorithms,What does an algorithm mean?,llm,0.0055,0.002000,cache,0.9507,10.1323,0.000000
-15,algorithms,What are algorithms used for?,llm,0.0057,0.002000,llm,N/A,16.9419,0.002000
-16,databases,What is a database?,llm,0.0054,0.002000,llm,N/A,17.2428,0.002000
-17,databases,Define a database,llm,0.0054,0.002000,cache,0.9331,8.3914,0.000000
-18,databases,Explain databases,llm,0.0055,0.002000,llm,N/A,15.9297,0.002000
-19,databases,What does a database do?,llm,0.0054,0.002000,cache,0.9214,8.5772,0.000000
-20,databases,Why are databases used?,llm,0.0054,0.002000,llm,N/A,16.1667,0.002000
-21,networking,What is computer networking?,llm,0.0052,0.002000,llm,N/A,17.3469,0.002000
-22,networking,Define computer networking,llm,0.0056,0.002000,cache,0.9098,7.8493,0.000000
-23,networking,Explain computer networks,llm,0.0074,0.002000,llm,N/A,15.3787,0.002000
-24,networking,What is networking?,llm,0.0054,0.002000,cache,0.8799,7.2576,0.000000
-25,networking,How does computer networking work?,llm,0.0058,0.002000,llm,N/A,15.8707,0.002000
-26,other,What is photosynthesis?,llm,0.0053,0.002000,llm,N/A,17.2882,0.002000
-27,other,What is gravity?,llm,0.0059,0.002000,llm,N/A,18.6714,0.002000
-28,other,What is encryption?,llm,0.0052,0.002000,llm,N/A,18.5787,0.002000
-29,other,What is cloud computing?,llm,0.0063,0.002000,llm,N/A,15.5787,0.002000
-30,other,What is an operating system?,llm,0.0054,0.002000,llm,N/A,18.9074,0.002000
+1,machine_learning,What is machine learning?,llm,0.0445,0.002000,llm,N/A,15.2018,0.002000
+2,machine_learning,Define machine learning,llm,0.0099,0.002000,cache,0.9114,15.3991,0.000000
+3,machine_learning,Explain machine learning,llm,0.0082,0.002000,llm,N/A,28.6927,0.002000
+4,machine_learning,What does machine learning mean?,llm,0.0072,0.002000,cache,0.9443,17.0532,0.000000
+5,machine_learning,How does machine learning work?,llm,0.0064,0.002000,cache,0.8536,15.7338,0.000000
+6,semantic_caching,What is semantic caching?,llm,0.0063,0.002000,llm,N/A,32.7746,0.002000
+7,semantic_caching,Define semantic caching,llm,0.0055,0.002000,cache,0.9638,16.7424,0.000000
+8,semantic_caching,Explain semantic caching,llm,0.0056,0.002000,cache,0.9420,16.2619,0.000000
+9,semantic_caching,How does semantic caching work?,llm,0.0105,0.002000,cache,0.9531,15.9168,0.000000
+10,semantic_caching,What does semantic cache mean?,llm,0.0064,0.002000,cache,0.9159,18.1063,0.000000
+11,algorithms,What is an algorithm?,llm,0.0076,0.002000,llm,N/A,35.4091,0.002000
+12,algorithms,Define an algorithm,llm,0.0058,0.002000,cache,0.9486,17.3741,0.000000
+13,algorithms,Explain algorithms,llm,0.0053,0.002000,llm,N/A,36.8763,0.002000
+14,algorithms,What does an algorithm mean?,llm,0.0055,0.002000,cache,0.9507,16.0616,0.000000
+15,algorithms,What are algorithms used for?,llm,0.0046,0.002000,llm,N/A,25.9868,0.002000
+16,databases,What is a database?,llm,0.0052,0.002000,llm,N/A,26.2816,0.002000
+17,databases,Define a database,llm,0.0047,0.002000,cache,0.9331,11.8880,0.000000
+18,databases,Explain databases,llm,0.0048,0.002000,llm,N/A,26.4670,0.002000
+19,databases,What does a database do?,llm,0.0052,0.002000,cache,0.9214,13.6374,0.000000
+20,databases,Why are databases used?,llm,0.0047,0.002000,llm,N/A,25.4564,0.002000
+21,networking,What is computer networking?,llm,0.0047,0.002000,llm,N/A,29.9715,0.002000
+22,networking,Define computer networking,llm,0.0048,0.002000,cache,0.9098,17.4890,0.000000
+23,networking,Explain computer networks,llm,0.0045,0.002000,llm,N/A,30.6580,0.002000
+24,networking,What is networking?,llm,0.0045,0.002000,cache,0.8799,16.3638,0.000000
+25,networking,How does computer networking work?,llm,0.0061,0.002000,llm,N/A,29.3511,0.002000
+26,other,What is photosynthesis?,llm,0.0048,0.002000,llm,N/A,28.2370,0.002000
+27,other,What is gravity?,llm,0.0044,0.002000,llm,N/A,28.6276,0.002000
+28,other,What is encryption?,llm,0.0044,0.002000,llm,N/A,29.5204,0.002000
+29,other,What is cloud computing?,llm,0.0043,0.002000,llm,N/A,29.7649,0.002000
+30,other,What is an operating system?,llm,0.0045,0.002000,llm,N/A,28.8617,0.002000
