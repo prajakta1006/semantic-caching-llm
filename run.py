@@ -1,3 +1,4 @@
+
 """Interactive demo runner for the semantic caching project.
 
 Integrated components:
@@ -5,6 +6,8 @@ Integrated components:
 - Dhano LLM Pipeline
 - Praj Cache Optimizer
 - Andi Evaluation Tracker
+- MongoDB persistent cache
+- Query history
 """
 
 import sys
@@ -21,11 +24,13 @@ if hasattr(sys.stderr, "reconfigure"):
     except Exception:
         pass
 
+from src.query_history import save_query
 from src.cache_optimizer import CacheOptimizer
 from src.config import config
 from src.evaluator import EvaluationTracker
 from src.pipeline import SemanticCachingPipeline
 from src.semantic_cache import SemanticCache
+from src.mongo_cache_store import MongoCacheStore
 
 
 # ----------------------------------------------------------------------
@@ -34,7 +39,6 @@ from src.semantic_cache import SemanticCache
 
 def get_display_model():
     """Return the configured model corresponding to the active provider."""
-
     if config.llm_provider.lower() == "mock":
         return "mock-llm-v1"
 
@@ -50,7 +54,6 @@ class DemoEmbeddingGenerator:
 
     def encode(self, text: str):
         """Return deterministic embeddings for known demo queries."""
-
         normalized = text.strip().lower()
 
         embeddings = {
@@ -70,13 +73,20 @@ class DemoEmbeddingGenerator:
 # ----------------------------------------------------------------------
 
 def create_cache():
-    """Create the semantic cache and wrap it with the optimizer."""
+    """Create MongoDB-backed semantic cache and wrap it with the optimizer."""
 
+    print("[*] Connecting to MongoDB Atlas...")
+
+    # MongoDB store is shared by both embedding modes.
+    mongo_store = MongoCacheStore()
+
+    print("[+] MongoDB store initialized.")
     print("[*] Initializing TanTan's semantic cache...")
 
     try:
         semantic_cache = SemanticCache(
-            embedding_model_name=config.embedding_model_name
+            embedding_model_name=config.embedding_model_name,
+            store=mongo_store,
         )
 
         print("[+] Real SentenceTransformer embedding model loaded.")
@@ -84,28 +94,33 @@ def create_cache():
 
     except Exception as exc:
         print()
-        print("[!] Real embedding model could not be initialized.")
+        print("[!] Real embedding model or cache restoration failed.")
         print(f"[!] Reason: {exc}")
         print()
-        print("[*] Using deterministic demo embeddings instead.")
+        print("[*] Trying deterministic demo embeddings instead.")
 
         semantic_cache = SemanticCache(
-            embedding_generator=DemoEmbeddingGenerator()
+            embedding_generator=DemoEmbeddingGenerator(),
+            store=mongo_store,
         )
 
         print("[+] Demo embedding generator loaded.")
         embedding_mode = "DEMO"
 
+    # MongoDB restores previously saved entries.
+    # The optimizer applies capacity, LRU and TTL policies to them.
     optimizer = CacheOptimizer(
         cache=semantic_cache,
         max_size=3,
-        ttl_seconds=None,
+        ttl_seconds=3600,
     )
 
     print("[+] Praj cache optimizer connected.")
+    print("[+] MongoDB persistence enabled.")
+    print(f"[+] Restored cache entries: {optimizer.size()}")
     print("[+] Cache capacity : 3 entries")
     print("[+] Eviction policy : LRU")
-    print("[+] TTL             : Disabled")
+    print("[+] TTL             : 3600 seconds (1 hour)")
 
     return optimizer, embedding_mode
 
@@ -161,10 +176,7 @@ def print_cache(cache):
             print(f"      Frequency : {frequency}")
 
             if entry.similarity_score is not None:
-                print(
-                    f"      Similarity: "
-                    f"{entry.similarity_score:.4f}"
-                )
+                print(f"      Similarity: {entry.similarity_score:.4f}")
 
     print("-" * 76)
     print(f" Capacity : {cache.max_size}")
@@ -202,46 +214,35 @@ def print_response(
     print(f" Latency      : {response.latency_ms:.2f} ms")
 
     metadata = response.metadata or {}
-
     llm_metadata = metadata.get("llm_metadata") or {}
 
-    provider = metadata.get(
-        "provider",
-        config.llm_provider,
-    )
+    provider = metadata.get("provider", config.llm_provider)
 
     actual_model = metadata.get(
         "model",
-        llm_metadata.get(
-            "model_used",
-            get_display_model(),
-        ),
+        llm_metadata.get("model_used", get_display_model()),
     )
 
     print(f" Provider     : {provider}")
     print(f" Model        : {actual_model}")
 
     if response.source == "cache":
-
         print()
         print("[+] CACHE HIT")
         print("[+] LLM CALL AVOIDED")
         print("[+] Cached response returned")
 
     elif response.source == "error":
-
         print()
         print("[!] CACHE MISS")
         print("[!] LLM GENERATION FAILED")
         print("[!] No failed response was stored in cache")
 
         error = metadata.get("llm_error")
-
         if error:
             print(f"[!] Error details: {error}")
 
     else:
-
         print()
         print("[+] CACHE MISS")
         print("[>] Query successfully processed by LLM")
@@ -251,7 +252,6 @@ def print_response(
 
         if current_cache_size > previous_cache_size:
             print("[+] Response stored in cache")
-
         elif current_cache_size == previous_cache_size:
             print("[+] Cache optimizer processed the response")
 
@@ -282,10 +282,11 @@ def print_statistics(
     print("                       SESSION STATISTICS")
     print("=" * 76)
 
-    if total_queries > 0:
-        hit_rate = cache_hits / total_queries * 100
-    else:
-        hit_rate = 0.0
+    hit_rate = (
+        cache_hits / total_queries * 100
+        if total_queries > 0
+        else 0.0
+    )
 
     print(f" Total Queries           : {total_queries}")
     print(f" Cache Hits              : {cache_hits}")
@@ -303,6 +304,7 @@ def print_statistics(
 
     print(f" Cache Size              : {cache.size()}/{cache.max_size}")
     print(" Eviction Policy         : LRU")
+    print(" TTL                     : 3600 seconds")
 
     print("=" * 76)
 
@@ -359,7 +361,6 @@ def main():
     failed_llm_calls = 0
 
     while True:
-
         print()
 
         try:
@@ -386,7 +387,6 @@ def main():
             continue
 
         if command == "stats":
-
             print_statistics(
                 total_queries=total_queries,
                 cache_hits=cache_hits,
@@ -396,11 +396,9 @@ def main():
                 failed_llm_calls=failed_llm_calls,
                 cache=cache,
             )
-
             continue
 
         if command == "benchmark":
-
             from evaluation.benchmark import (
                 print_benchmark_report,
                 run_benchmark,
@@ -410,24 +408,21 @@ def main():
             print("[*] Running benchmark suite...")
 
             bench_results = run_benchmark()
-
             print_benchmark_report(bench_results)
             continue
 
+        save_query(raw_query)
+
         previous_cache_size = cache.size()
-
         response = pipeline.process_query(raw_query)
-
         current_cache_size = cache.size()
 
         total_queries += 1
 
         if response.source == "cache":
-
             cache_hits += 1
 
         else:
-
             cache_misses += 1
 
             metadata = response.metadata or {}

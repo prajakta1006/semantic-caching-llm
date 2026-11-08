@@ -29,7 +29,8 @@ class CacheEntry:
     similarity_score: float = 0.0
     timestamp: float = field(default_factory=time.time)
     metadata: Dict[str, Any] = field(default_factory=dict)
-
+    last_accessed: Optional[float] = None
+    access_count: int = 0
 
 @dataclass
 class DecisionResult:

@@ -1,3 +1,4 @@
+
 """Cache optimization layer owned by Praj.
 
 This module adds cache-management policies around TanTan's
@@ -60,6 +61,40 @@ class CacheOptimizer(CacheInterface):
         # Newest/MRU entry is at the end.
         self._lru: OrderedDict[str, None] = OrderedDict()
 
+        # Restore optimizer metadata from previously saved cache entries.
+        entries_method = getattr(self.cache, "entries", None)
+
+        if callable(entries_method):
+            entries = list(entries_method())
+
+            # Restore entries from least recently used to most recently used.
+            entries.sort(
+                key=lambda entry: (
+                    entry.last_accessed
+                    if entry.last_accessed is not None
+                    else entry.timestamp
+                )
+            )
+
+            for entry in entries:
+                last_accessed = (
+                    entry.last_accessed
+                    if entry.last_accessed is not None
+                    else entry.timestamp
+                )
+
+                self._metadata[entry.query] = CacheMetadata(
+                    created_at=entry.timestamp,
+                    last_accessed=last_accessed,
+                    access_count=entry.access_count,
+                )
+
+                self._lru[entry.query] = None
+
+        # Apply TTL and capacity rules after restoration.
+        self._remove_expired_entries()
+        self._enforce_capacity()
+
     # ------------------------------------------------------------------
     # CacheInterface
     # ------------------------------------------------------------------
@@ -88,9 +123,9 @@ class CacheOptimizer(CacheInterface):
 
         if metadata is None:
             metadata = CacheMetadata(
-                created_at=now,
-                last_accessed=now,
-                access_count=0,
+                created_at=entry.timestamp,
+                last_accessed=entry.timestamp,
+                access_count=entry.access_count,
             )
 
             self._metadata[key] = metadata
@@ -100,6 +135,20 @@ class CacheOptimizer(CacheInterface):
         metadata.last_accessed = now
 
         self._lru.move_to_end(key)
+
+        # Persist updated access information.
+        update_method = getattr(
+            self.cache,
+            "update_metadata",
+            None,
+        )
+
+        if callable(update_method):
+            update_method(
+                query=key,
+                last_accessed=metadata.last_accessed,
+                access_count=metadata.access_count,
+            )
 
         return entry
 
@@ -136,6 +185,20 @@ class CacheOptimizer(CacheInterface):
 
         self._lru[query] = None
         self._lru.move_to_end(query)
+
+        # Persist initial optimizer metadata.
+        update_method = getattr(
+            self.cache,
+            "update_metadata",
+            None,
+        )
+
+        if callable(update_method):
+            update_method(
+                query=query,
+                last_accessed=self._metadata[query].last_accessed,
+                access_count=self._metadata[query].access_count,
+            )
 
         self._enforce_capacity()
 
@@ -295,39 +358,45 @@ class CacheOptimizer(CacheInterface):
         return next(iter(self._lru))
 
     def _remove_entry(self, query: str) -> None:
-        """Remove an entry from both optimization and cache storage."""
+        """Remove an entry from optimization metadata and cache storage."""
 
-        entries_method = getattr(self.cache, "entries", None)
+        remove_method = getattr(self.cache, "remove", None)
 
-        if not callable(entries_method):
-            raise AttributeError(
-                "Wrapped cache must provide entries()"
-            )
+        if callable(remove_method):
+            remove_method(query)
+        else:
+            # Fallback for cache implementations without remove().
+            entries_method = getattr(self.cache, "entries", None)
 
-        entries = list(entries_method())
+            if not callable(entries_method):
+                raise AttributeError(
+                    "Wrapped cache must provide entries()"
+                )
 
-        remaining = [
-            entry
-            for entry in entries
-            if entry.query != query
-        ]
+            entries = list(entries_method())
 
-        clear_method = getattr(self.cache, "clear", None)
+            remaining = [
+                entry
+                for entry in entries
+                if entry.query != query
+            ]
 
-        if not callable(clear_method):
-            raise AttributeError(
-                "Wrapped cache must provide clear()"
-            )
+            clear_method = getattr(self.cache, "clear", None)
 
-        clear_method()
+            if not callable(clear_method):
+                raise AttributeError(
+                    "Wrapped cache must provide clear()"
+                )
 
-        for entry in remaining:
-            self.cache.put(
-                query=entry.query,
-                response=entry.response,
-                embedding=entry.embedding,
-                metadata=entry.metadata,
-            )
+            clear_method()
+
+            for entry in remaining:
+                self.cache.put(
+                    query=entry.query,
+                    response=entry.response,
+                    embedding=entry.embedding,
+                    metadata=entry.metadata,
+                )
 
         self._metadata.pop(query, None)
         self._lru.pop(query, None)
