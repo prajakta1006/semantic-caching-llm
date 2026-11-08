@@ -1,37 +1,10 @@
 """Interactive demo runner for the semantic caching project.
 
-Demonstrates the integrated:
-
-    TanTan Semantic Cache
-            +
-    Dhano LLM Pipeline
-            +
-    Praj Cache Optimizer
-
-Flow:
-
-    User Query
-        ↓
-    Dhano Pipeline
-        ↓
-    Praj CacheOptimizer
-        ↓
-    TanTan Semantic Cache
-        ↓
-    ┌───────────────┐
-    │ Semantic HIT? │
-    └───────┬───────┘
-        YES │ NO
-            │
-            ├──────────────┐
-            ↓              ↓
-       Cached Answer      Mock LLM
-                              ↓
-                       Store in Cache
-                              ↓
-                       Praj Optimizer
-                              ↓
-                     Capacity / LRU Check
+Integrated components:
+- TanTan Semantic Cache
+- Dhano LLM Pipeline
+- Praj Cache Optimizer
+- Andi Evaluation Tracker
 """
 
 import sys
@@ -41,6 +14,7 @@ if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
         pass
+
 if hasattr(sys.stderr, "reconfigure"):
     try:
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
@@ -55,9 +29,21 @@ from src.semantic_cache import SemanticCache
 
 
 # ----------------------------------------------------------------------
-# Fallback embedding generator
+# Display configuration
 # ----------------------------------------------------------------------
 
+def get_display_model():
+    """Return the configured model corresponding to the active provider."""
+
+    if config.llm_provider.lower() == "mock":
+        return "mock-llm-v1"
+
+    return config.default_llm_model
+
+
+# ----------------------------------------------------------------------
+# Fallback embedding generator
+# ----------------------------------------------------------------------
 
 class DemoEmbeddingGenerator:
     """Deterministic fallback embeddings for local demonstration."""
@@ -76,19 +62,15 @@ class DemoEmbeddingGenerator:
             "define an algorithm": [0.70, 0.71],
         }
 
-        return embeddings.get(
-            normalized,
-            [0.0, 0.0],
-        )
+        return embeddings.get(normalized, [0.0, 0.0])
 
 
 # ----------------------------------------------------------------------
 # Cache creation
 # ----------------------------------------------------------------------
 
-
 def create_cache():
-    """Create TanTan's semantic cache and wrap it with Praj's optimizer."""
+    """Create the semantic cache and wrap it with the optimizer."""
 
     print("[*] Initializing TanTan's semantic cache...")
 
@@ -97,43 +79,22 @@ def create_cache():
             embedding_model_name=config.embedding_model_name
         )
 
-        print(
-            "[+] Real SentenceTransformer "
-            "embedding model loaded."
-        )
-
+        print("[+] Real SentenceTransformer embedding model loaded.")
         embedding_mode = "REAL"
 
     except Exception as exc:
         print()
-        print(
-            "[!] Real embedding model could not "
-            "be initialized."
-        )
+        print("[!] Real embedding model could not be initialized.")
         print(f"[!] Reason: {exc}")
         print()
-        print(
-            "[*] Using deterministic demo "
-            "embeddings instead."
-        )
+        print("[*] Using deterministic demo embeddings instead.")
 
         semantic_cache = SemanticCache(
             embedding_generator=DemoEmbeddingGenerator()
         )
 
-        print(
-            "[+] Demo embedding generator loaded."
-        )
-
+        print("[+] Demo embedding generator loaded.")
         embedding_mode = "DEMO"
-
-    # --------------------------------------------------------------
-    # Praj's cache optimizer
-    #
-    # Small capacity is intentional for demonstration.
-    # LRU remains the current eviction policy.
-    # TTL is disabled for the main demo.
-    # --------------------------------------------------------------
 
     optimizer = CacheOptimizer(
         cache=semantic_cache,
@@ -141,21 +102,10 @@ def create_cache():
         ttl_seconds=None,
     )
 
-    print(
-        "[+] Praj cache optimizer connected."
-    )
-
-    print(
-        "[+] Cache capacity : 3 entries"
-    )
-
-    print(
-        "[+] Eviction policy : LRU"
-    )
-
-    print(
-        "[+] TTL             : Disabled"
-    )
+    print("[+] Praj cache optimizer connected.")
+    print("[+] Cache capacity : 3 entries")
+    print("[+] Eviction policy : LRU")
+    print("[+] TTL             : Disabled")
 
     return optimizer, embedding_mode
 
@@ -164,32 +114,18 @@ def create_cache():
 # Header
 # ----------------------------------------------------------------------
 
-
 def print_header():
     """Print the main application header."""
 
     print()
     print("=" * 76)
-    print(
-        "        SEMANTIC CACHE - COST & LATENCY OPTIMIZATION"
-    )
+    print("        SEMANTIC CACHE - COST & LATENCY OPTIMIZATION")
     print("=" * 76)
 
-    print(
-        f" Embedding Model : {config.embedding_model_name}"
-    )
-
-    print(
-        f" Similarity      : {config.similarity_threshold}"
-    )
-
-    print(
-        f" LLM Provider    : {config.llm_provider}"
-    )
-
-    print(
-        f" LLM Model       : {config.default_llm_model}"
-    )
+    print(f" Embedding Model : {config.embedding_model_name}")
+    print(f" Similarity      : {config.similarity_threshold}")
+    print(f" LLM Provider    : {config.llm_provider}")
+    print(f" LLM Model       : {get_display_model()}")
 
     print("=" * 76)
 
@@ -198,71 +134,47 @@ def print_header():
 # Cache display
 # ----------------------------------------------------------------------
 
-
 def print_cache(cache):
     """Display current cache contents and optimizer metadata."""
 
-    entries_method = getattr(
-        cache,
-        "entries",
-        None,
-    )
+    entries_method = getattr(cache, "entries", None)
 
     if not callable(entries_method):
+        print("[!] Cache entry inspection is unavailable.")
         return
 
     entries = list(entries_method())
 
     print()
     print("-" * 76)
-    print(
-        f" CACHE CONTENTS ({len(entries)} entries)"
-    )
+    print(f" CACHE CONTENTS ({len(entries)} entries)")
     print("-" * 76)
 
     if not entries:
         print(" Cache is empty.")
 
     else:
-        for index, entry in enumerate(
-            entries,
-            start=1,
-        ):
-            frequency = cache.get_frequency(
-                entry.query
-            )
+        for index, entry in enumerate(entries, start=1):
+            frequency = cache.get_frequency(entry.query)
 
-            print(
-                f" [{index}] {entry.query}"
-            )
+            print(f" [{index}] {entry.query}")
+            print(f"      Frequency : {frequency}")
 
-            print(
-                f"      Frequency : {frequency}"
-            )
-
-            if entry.similarity_score:
+            if entry.similarity_score is not None:
                 print(
                     f"      Similarity: "
                     f"{entry.similarity_score:.4f}"
                 )
 
     print("-" * 76)
-
-    print(
-        f" Capacity : {cache.max_size}"
-    )
-
-    print(
-        f" Current  : {cache.size()}"
-    )
-
+    print(f" Capacity : {cache.max_size}")
+    print(f" Current  : {cache.size()}")
     print("-" * 76)
 
 
 # ----------------------------------------------------------------------
 # Response display
 # ----------------------------------------------------------------------
-
 
 def print_response(
     query: str,
@@ -274,81 +186,74 @@ def print_response(
 
     print()
     print("=" * 76)
-    print(
-        f" QUERY: {query}"
-    )
+    print(f" QUERY: {query}")
     print("=" * 76)
 
-    print(
-        f" Source       : "
-        f"{response.source.upper()}"
-    )
+    print(f" Source       : {response.source.upper()}")
 
     if response.decision is not None:
-        print(
-            f" Decision     : "
-            f"{response.decision.route}"
-        )
+        print(f" Decision     : {response.decision.route}")
 
     if response.similarity_score is not None:
-        print(
-            f" Similarity   : "
-            f"{response.similarity_score:.4f}"
-        )
+        print(f" Similarity   : {response.similarity_score:.4f}")
     else:
-        print(
-            " Similarity   : N/A"
-        )
+        print(" Similarity   : N/A")
 
-    print(
-        f" Latency      : "
-        f"{response.latency_ms:.2f} ms"
+    print(f" Latency      : {response.latency_ms:.2f} ms")
+
+    metadata = response.metadata or {}
+
+    llm_metadata = metadata.get("llm_metadata") or {}
+
+    provider = metadata.get(
+        "provider",
+        config.llm_provider,
     )
 
-    model = response.metadata.get(
+    actual_model = metadata.get(
         "model",
-        "N/A",
+        llm_metadata.get(
+            "model_used",
+            get_display_model(),
+        ),
     )
 
-    print(
-        f" Model        : {model}"
-    )
+    print(f" Provider     : {provider}")
+    print(f" Model        : {actual_model}")
 
     if response.source == "cache":
 
         print()
-        print(
-            " ✓ CACHE HIT"
-        )
+        print("[+] CACHE HIT")
+        print("[+] LLM CALL AVOIDED")
+        print("[+] Cached response returned")
 
-        print(
-            " ✓ LLM CALL AVOIDED"
-        )
+    elif response.source == "error":
 
-        print(
-            " ✓ Cached response returned"
-        )
+        print()
+        print("[!] CACHE MISS")
+        print("[!] LLM GENERATION FAILED")
+        print("[!] No failed response was stored in cache")
+
+        error = metadata.get("llm_error")
+
+        if error:
+            print(f"[!] Error details: {error}")
 
     else:
 
         print()
-        print(
-            " ✗ CACHE MISS"
-        )
+        print("[+] CACHE MISS")
+        print("[>] Query successfully processed by LLM")
 
-        print(
-            " → Query sent to LLM"
-        )
+        if llm_metadata.get("fallback_used"):
+            print("[!] Fallback model was used.")
 
         if current_cache_size > previous_cache_size:
-            print(
-                " ✓ Response stored in cache"
-            )
+            print("[+] Response stored in cache")
 
         elif current_cache_size == previous_cache_size:
-            print(
-                " ✓ Response processed by optimizer"
-            )
+            print("[+] Cache optimizer processed the response")
 
     print()
     print(" RESPONSE")
@@ -361,63 +266,43 @@ def print_response(
 # Statistics
 # ----------------------------------------------------------------------
 
-
 def print_statistics(
     total_queries: int,
     cache_hits: int,
     cache_misses: int,
-    total_llm_calls: int,
+    llm_call_attempts: int,
+    successful_llm_calls: int,
+    failed_llm_calls: int,
     cache,
 ):
-    """Display session statistics."""
+    """Display accurate session statistics."""
 
-    print()
     print()
     print("=" * 76)
     print("                       SESSION STATISTICS")
     print("=" * 76)
 
-    print(
-        f" Total Queries       : {total_queries}"
-    )
-
-    print(
-        f" Cache Hits          : {cache_hits}"
-    )
-
-    print(
-        f" Cache Misses        : {cache_misses}"
-    )
-
     if total_queries > 0:
-        hit_rate = (
-            cache_hits
-            / total_queries
-            * 100
-        )
+        hit_rate = cache_hits / total_queries * 100
     else:
         hit_rate = 0.0
 
-    print(
-        f" Cache Hit Rate      : {hit_rate:.2f}%"
-    )
+    print(f" Total Queries           : {total_queries}")
+    print(f" Cache Hits              : {cache_hits}")
+    print(f" Cache Misses            : {cache_misses}")
+    print(f" Cache Hit Rate          : {hit_rate:.2f}%")
 
-    print(
-        f" LLM Calls           : {total_llm_calls}"
-    )
+    print("-" * 76)
 
-    print(
-        f" LLM Calls Avoided   : {cache_hits}"
-    )
+    print(f" LLM Call Attempts       : {llm_call_attempts}")
+    print(f" Successful LLM Calls    : {successful_llm_calls}")
+    print(f" Failed LLM Calls        : {failed_llm_calls}")
+    print(f" LLM Calls Avoided       : {cache_hits}")
 
-    print(
-        f" Cache Size          : "
-        f"{cache.size()}/{cache.max_size}"
-    )
+    print("-" * 76)
 
-    print(
-        f" Eviction Policy     : LRU"
-    )
+    print(f" Cache Size              : {cache.size()}/{cache.max_size}")
+    print(" Eviction Policy         : LRU")
 
     print("=" * 76)
 
@@ -425,7 +310,6 @@ def print_statistics(
 # ----------------------------------------------------------------------
 # Main
 # ----------------------------------------------------------------------
-
 
 def main():
     """Run the interactive semantic caching demonstration."""
@@ -435,14 +319,10 @@ def main():
     cache, embedding_mode = create_cache()
 
     print()
-    print(
-        f" Embedding Mode : {embedding_mode}"
-    )
+    print(f" Embedding Mode : {embedding_mode}")
 
     print()
-    print(
-        "[*] Initializing Dhano's LLM pipeline..."
-    )
+    print("[*] Initializing Dhano's LLM pipeline...")
 
     evaluator = EvaluationTracker()
 
@@ -451,99 +331,58 @@ def main():
         evaluator=evaluator,
     )
 
-    print(
-        "[+] Pipeline initialized."
-    )
-
-    print(
-        "[+] TanTan semantic cache connected."
-    )
-
-    print(
-        "[+] Dhano LLM pipeline connected."
-    )
-
-    print(
-        "[+] Praj cache optimizer connected."
-    )
-
-    print(
-        "[+] Andi evaluation tracker connected."
-    )
+    print("[+] Pipeline initialized.")
+    print("[+] TanTan semantic cache connected.")
+    print("[+] Dhano LLM pipeline connected.")
+    print("[+] Praj cache optimizer connected.")
+    print("[+] Andi evaluation tracker connected.")
 
     print()
     print("=" * 76)
     print("                       INTERACTIVE DEMO")
     print("=" * 76)
 
-    print(
-        " Enter ANY query."
-    )
-
-    print(
-        " Type 'cache' to view cached entries."
-    )
-
-    print(
-        " Type 'stats' to view session statistics."
-    )
-
-    print(
-        " Type 'benchmark' to run evaluation benchmark."
-    )
-
-    print(
-        " Type 'exit' to stop the demo."
-    )
+    print(" Enter ANY query.")
+    print(" Type 'cache' to view cached entries.")
+    print(" Type 'stats' to view session statistics.")
+    print(" Type 'benchmark' to run evaluation benchmark.")
+    print(" Type 'exit' to stop the demo.")
 
     print("=" * 76)
 
     total_queries = 0
     cache_hits = 0
     cache_misses = 0
-    total_llm_calls = 0
+
+    llm_call_attempts = 0
+    successful_llm_calls = 0
+    failed_llm_calls = 0
 
     while True:
 
         print()
 
         try:
-            raw_query = input(
-                " Enter query > "
-            ).strip()
+            raw_query = input(" Enter query > ").strip()
 
-        except (
-            KeyboardInterrupt,
-            EOFError,
-        ):
+        except (KeyboardInterrupt, EOFError):
             print()
-            print()
-            print(
-                "Demo terminated."
-            )
+            print("Demo terminated.")
             break
 
         if not raw_query:
-            print(
-                "[!] Please enter a query."
-            )
+            print("[!] Please enter a query.")
             continue
 
         command = raw_query.lower()
 
         if command == "exit":
-
             print()
-            print(
-                "Exiting semantic cache demo..."
-            )
-
+            print("Exiting semantic cache demo...")
             break
 
         if command == "cache":
-
             print_cache(cache)
-
             continue
 
         if command == "stats":
@@ -552,7 +391,9 @@ def main():
                 total_queries=total_queries,
                 cache_hits=cache_hits,
                 cache_misses=cache_misses,
-                total_llm_calls=total_llm_calls,
+                llm_call_attempts=llm_call_attempts,
+                successful_llm_calls=successful_llm_calls,
+                failed_llm_calls=failed_llm_calls,
                 cache=cache,
             )
 
@@ -567,16 +408,15 @@ def main():
 
             print()
             print("[*] Running benchmark suite...")
-            bench_results = run_benchmark()
-            print_benchmark_report(bench_results)
 
+            bench_results = run_benchmark()
+
+            print_benchmark_report(bench_results)
             continue
 
         previous_cache_size = cache.size()
 
-        response = pipeline.process_query(
-            raw_query
-        )
+        response = pipeline.process_query(raw_query)
 
         current_cache_size = cache.size()
 
@@ -589,7 +429,32 @@ def main():
         else:
 
             cache_misses += 1
-            total_llm_calls += 1
+
+            metadata = response.metadata or {}
+
+            attempted = metadata.get(
+                "llm_call_attempted",
+                response.source in ("llm", "error"),
+            )
+
+            succeeded = metadata.get(
+                "llm_call_succeeded",
+                response.source == "llm",
+            )
+
+            failed = metadata.get(
+                "llm_call_failed",
+                response.source == "error",
+            )
+
+            if attempted:
+                llm_call_attempts += 1
+
+            if succeeded:
+                successful_llm_calls += 1
+
+            if failed:
+                failed_llm_calls += 1
 
         print_response(
             query=raw_query,
@@ -602,7 +467,9 @@ def main():
             total_queries=total_queries,
             cache_hits=cache_hits,
             cache_misses=cache_misses,
-            total_llm_calls=total_llm_calls,
+            llm_call_attempts=llm_call_attempts,
+            successful_llm_calls=successful_llm_calls,
+            failed_llm_calls=failed_llm_calls,
             cache=cache,
         )
 
