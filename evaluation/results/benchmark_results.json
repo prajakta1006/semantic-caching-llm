@@ -1,6 +1,6 @@
 {
   "experiment": {
-    "llm_mode": "MockLLM (simulated; no real API calls)",
+    "llm_mode": "Delayed MockLLM (500 ms simulated delay)",
     "embedding_model": "all-MiniLM-L6-v2",
     "embedding_mode": "REAL (all-MiniLM-L6-v2)",
     "similarity_threshold": 0.85,
@@ -8,7 +8,8 @@
     "eviction_policy": "LRU",
     "number_of_queries": 30,
     "execution_order": "Dataset order; single sequential pass",
-    "note": "Cached latency includes real embedding and cache lookup overhead. LLM generation uses MockLLM in both experiments."
+    "note": "Both experiments use the same configurable simulated LLM generation delay. Cached latency includes real embedding generation, cache lookup and simulated LLM generation on misses. This is a controlled simulation, not a live Gemini benchmark.",
+    "simulated_llm_delay_ms": 500.0
   },
   "baseline": {
     "total_queries": 30,
@@ -19,12 +20,12 @@
     "retry_count": 0,
     "fallback_attempt_count": 0,
     "fallback_count": 0,
-    "avg_latency_ms": 0.0309,
-    "p50_latency_ms": 0.0257,
-    "p95_latency_ms": 0.0755,
-    "total_latency_ms": 0.9282,
-    "total_elapsed_seconds": 0.001,
-    "throughput_queries_per_second": 29910.2706,
+    "avg_latency_ms": 500.4923,
+    "p50_latency_ms": 500.4091,
+    "p95_latency_ms": 500.8691,
+    "total_latency_ms": 15014.7681,
+    "total_elapsed_seconds": 15.015,
+    "throughput_queries_per_second": 1.998,
     "estimated_cost": 0.06
   },
   "cached": {
@@ -40,18 +41,18 @@
     "fallback_attempt_count": 0,
     "fallback_count": 0,
     "llm_calls_avoided": 13,
-    "avg_latency_ms": 32.6417,
-    "p50_latency_ms": 18.3604,
-    "p95_latency_ms": 47.8491,
-    "total_latency_ms": 979.2506,
-    "total_elapsed_seconds": 0.9801,
-    "throughput_queries_per_second": 30.6097,
+    "avg_latency_ms": 333.9075,
+    "p50_latency_ms": 522.5819,
+    "p95_latency_ms": 552.6478,
+    "total_latency_ms": 10017.2239,
+    "total_elapsed_seconds": 10.0179,
+    "throughput_queries_per_second": 2.9946,
     "estimated_cost": 0.034
   },
   "comparison": {
     "llm_calls_reduced_pct": 43.33,
-    "latency_change_pct": 105399.92,
-    "throughput_change_pct": -99.9,
+    "latency_change_pct": -33.28,
+    "throughput_change_pct": 49.88,
     "cost_reduction_pct": 43.33,
     "estimated_savings": 0.026
   },
@@ -61,11 +62,11 @@
       "group": "machine_learning",
       "query": "What is machine learning?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.11950009502470493,
+      "baseline_latency_ms": 500.41199987754226,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 367.9780000820756,
+      "cached_latency_ms": 1441.4973999373615,
       "cached_cost": 0.002
     },
     {
@@ -73,11 +74,11 @@
       "group": "machine_learning",
       "query": "Define machine learning",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.09740004315972328,
+      "baseline_latency_ms": 500.8379998616874,
       "baseline_cost": 0.002,
       "cached_source": "cache",
       "cached_similarity_score": 0.9113744523689968,
-      "cached_latency_ms": 33.29890011809766,
+      "cached_latency_ms": 10.224399622529745,
       "cached_cost": 0.0
     },
     {
@@ -85,11 +86,11 @@
       "group": "machine_learning",
       "query": "Explain machine learning",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.048800138756632805,
+      "baseline_latency_ms": 500.5299998447299,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 53.2241000328213,
+      "cached_latency_ms": 525.8582001551986,
       "cached_cost": 0.002
     },
     {
@@ -97,11 +98,11 @@
       "group": "machine_learning",
       "query": "What does machine learning mean?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.040400074794888496,
+      "baseline_latency_ms": 500.7214001379907,
       "baseline_cost": 0.002,
       "cached_source": "cache",
       "cached_similarity_score": 0.9442614271563595,
-      "cached_latency_ms": 18.844599835574627,
+      "cached_latency_ms": 9.107399731874466,
       "cached_cost": 0.0
     },
     {
@@ -109,11 +110,11 @@
       "group": "machine_learning",
       "query": "How does machine learning work?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.03650016151368618,
+      "baseline_latency_ms": 500.42830035090446,
       "baseline_cost": 0.002,
       "cached_source": "cache",
       "cached_similarity_score": 0.8536151595474953,
-      "cached_latency_ms": 10.925799841061234,
+      "cached_latency_ms": 7.773499935865402,
       "cached_cost": 0.0
     },
     {
@@ -121,11 +122,11 @@
       "group": "semantic_caching",
       "query": "What is semantic caching?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.037899939343333244,
+      "baseline_latency_ms": 501.23609974980354,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 17.96750002540648,
+      "cached_latency_ms": 522.031799890101,
       "cached_cost": 0.002
     },
     {
@@ -133,11 +134,11 @@
       "group": "semantic_caching",
       "query": "Define semantic caching",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.030900118872523308,
+      "baseline_latency_ms": 500.3307997249067,
       "baseline_cost": 0.002,
       "cached_source": "cache",
       "cached_similarity_score": 0.9637622460476238,
-      "cached_latency_ms": 12.71070004440844,
+      "cached_latency_ms": 7.6235998421907425,
       "cached_cost": 0.0
     },
     {
@@ -145,11 +146,11 @@
       "group": "semantic_caching",
       "query": "Explain semantic caching",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.025399960577487946,
+      "baseline_latency_ms": 500.3407998010516,
       "baseline_cost": 0.002,
       "cached_source": "cache",
       "cached_similarity_score": 0.9420381536442053,
-      "cached_latency_ms": 12.53740000538528,
+      "cached_latency_ms": 7.443299982696772,
       "cached_cost": 0.0
     },
     {
@@ -157,11 +158,11 @@
       "group": "semantic_caching",
       "query": "How does semantic caching work?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.0295999925583601,
+      "baseline_latency_ms": 500.2935999073088,
       "baseline_cost": 0.002,
       "cached_source": "cache",
       "cached_similarity_score": 0.9531009642959013,
-      "cached_latency_ms": 9.528500027954578,
+      "cached_latency_ms": 7.565299980342388,
       "cached_cost": 0.0
     },
     {
@@ -169,11 +170,11 @@
       "group": "semantic_caching",
       "query": "What does semantic cache mean?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.025900080800056458,
+      "baseline_latency_ms": 500.54340017959476,
       "baseline_cost": 0.002,
       "cached_source": "cache",
       "cached_similarity_score": 0.9159309410866611,
-      "cached_latency_ms": 22.769799921661615,
+      "cached_latency_ms": 7.912999950349331,
       "cached_cost": 0.0
     },
     {
@@ -181,11 +182,11 @@
       "group": "algorithms",
       "query": "What is an algorithm?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.028799986466765404,
+      "baseline_latency_ms": 500.5280999466777,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 41.27969988621771,
+      "cached_latency_ms": 523.2534999959171,
       "cached_cost": 0.002
     },
     {
@@ -193,11 +194,11 @@
       "group": "algorithms",
       "query": "Define an algorithm",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.03269989974796772,
+      "baseline_latency_ms": 500.3634002059698,
       "baseline_cost": 0.002,
       "cached_source": "cache",
       "cached_similarity_score": 0.9485557237511623,
-      "cached_latency_ms": 19.226899836212397,
+      "cached_latency_ms": 8.484399877488613,
       "cached_cost": 0.0
     },
     {
@@ -205,11 +206,11 @@
       "group": "algorithms",
       "query": "Explain algorithms",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.025300076231360435,
+      "baseline_latency_ms": 500.18539978191257,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 30.81430005840957,
+      "cached_latency_ms": 566.4757001213729,
       "cached_cost": 0.002
     },
     {
@@ -217,11 +218,11 @@
       "group": "algorithms",
       "query": "What does an algorithm mean?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.025499844923615456,
+      "baseline_latency_ms": 500.6170002743602,
       "baseline_cost": 0.002,
       "cached_source": "cache",
       "cached_similarity_score": 0.9507117457842159,
-      "cached_latency_ms": 10.960499988868833,
+      "cached_latency_ms": 9.26669966429472,
       "cached_cost": 0.0
     },
     {
@@ -229,11 +230,11 @@
       "group": "algorithms",
       "query": "What are algorithms used for?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.02729985862970352,
+      "baseline_latency_ms": 500.439599622041,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 18.853900022804737,
+      "cached_latency_ms": 526.2982998974621,
       "cached_cost": 0.002
     },
     {
@@ -241,11 +242,11 @@
       "group": "databases",
       "query": "What is a database?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.027300091460347176,
+      "baseline_latency_ms": 500.34500006586313,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 17.46319979429245,
+      "cached_latency_ms": 524.0942002274096,
       "cached_cost": 0.002
     },
     {
@@ -253,11 +254,11 @@
       "group": "databases",
       "query": "Define a database",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.025900080800056458,
+      "baseline_latency_ms": 500.39060041308403,
       "baseline_cost": 0.002,
       "cached_source": "cache",
       "cached_similarity_score": 0.9331435908489103,
-      "cached_latency_ms": 8.618499850854278,
+      "cached_latency_ms": 8.011499885469675,
       "cached_cost": 0.0
     },
     {
@@ -265,11 +266,11 @@
       "group": "databases",
       "query": "Explain databases",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.02319994382560253,
+      "baseline_latency_ms": 500.27869967743754,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 31.171899987384677,
+      "cached_latency_ms": 514.2155000939965,
       "cached_cost": 0.002
     },
     {
@@ -277,11 +278,11 @@
       "group": "databases",
       "query": "What does a database do?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.023099826648831367,
+      "baseline_latency_ms": 500.71230018511415,
       "baseline_cost": 0.002,
       "cached_source": "cache",
       "cached_similarity_score": 0.9213818411996463,
-      "cached_latency_ms": 22.210799856111407,
+      "cached_latency_ms": 8.512299973517656,
       "cached_cost": 0.0
     },
     {
@@ -289,11 +290,11 @@
       "group": "databases",
       "query": "Why are databases used?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.02310005947947502,
+      "baseline_latency_ms": 500.5291998386383,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 32.33109996654093,
+      "cached_latency_ms": 526.8244999460876,
       "cached_cost": 0.002
     },
     {
@@ -301,11 +302,11 @@
       "group": "networking",
       "query": "What is computer networking?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.022700056433677673,
+      "baseline_latency_ms": 500.35279989242554,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 33.7651998270303,
+      "cached_latency_ms": 529.6061998233199,
       "cached_cost": 0.002
     },
     {
@@ -313,11 +314,11 @@
       "group": "networking",
       "query": "Define computer networking",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.022799940779805183,
+      "baseline_latency_ms": 500.40620006620884,
       "baseline_cost": 0.002,
       "cached_source": "cache",
       "cached_similarity_score": 0.909773894523074,
-      "cached_latency_ms": 10.70429990068078,
+      "cached_latency_ms": 8.14529974013567,
       "cached_cost": 0.0
     },
     {
@@ -325,11 +326,11 @@
       "group": "networking",
       "query": "Explain computer networks",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.02350006252527237,
+      "baseline_latency_ms": 500.37769973278046,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 25.628500152379274,
+      "cached_latency_ms": 523.132000118494,
       "cached_cost": 0.002
     },
     {
@@ -337,11 +338,11 @@
       "group": "networking",
       "query": "What is networking?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.022500054910779,
+      "baseline_latency_ms": 500.8946000598371,
       "baseline_cost": 0.002,
       "cached_source": "cache",
       "cached_similarity_score": 0.8799121135626017,
-      "cached_latency_ms": 12.791200075298548,
+      "cached_latency_ms": 13.665500096976757,
       "cached_cost": 0.0
     },
     {
@@ -349,11 +350,11 @@
       "group": "networking",
       "query": "How does computer networking work?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.025999965146183968,
+      "baseline_latency_ms": 500.7309000939131,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 18.633600091561675,
+      "cached_latency_ms": 532.0194996893406,
       "cached_cost": 0.002
     },
     {
@@ -361,11 +362,11 @@
       "group": "other",
       "query": "What is photosynthesis?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.020900042727589607,
+      "baseline_latency_ms": 500.32270001247525,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 17.452799947932363,
+      "cached_latency_ms": 535.7471001334488,
       "cached_cost": 0.002
     },
     {
@@ -373,11 +374,11 @@
       "group": "other",
       "query": "What is gravity?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.010499963536858559,
+      "baseline_latency_ms": 500.53479988127947,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 14.792700065299869,
+      "cached_latency_ms": 527.1562002599239,
       "cached_cost": 0.002
     },
     {
@@ -385,11 +386,11 @@
       "group": "other",
       "query": "What is encryption?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.008200062438845634,
+      "baseline_latency_ms": 500.38670003414154,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 17.001699889078736,
+      "cached_latency_ms": 528.1801000237465,
       "cached_cost": 0.002
     },
     {
@@ -397,11 +398,11 @@
       "group": "other",
       "query": "What is cloud computing?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.008299946784973145,
+      "baseline_latency_ms": 500.3140000626445,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 17.677299911156297,
+      "cached_latency_ms": 532.3848999105394,
       "cached_cost": 0.002
     },
     {
@@ -409,11 +410,11 @@
       "group": "other",
       "query": "What is an operating system?",
       "baseline_source": "llm",
-      "baseline_latency_ms": 0.008299946784973145,
+      "baseline_latency_ms": 500.38399966433644,
       "baseline_cost": 0.002,
       "cached_source": "llm",
       "cached_similarity_score": null,
-      "cached_latency_ms": 18.08719988912344,
+      "cached_latency_ms": 524.7125998139381,
       "cached_cost": 0.002
     }
   ]
