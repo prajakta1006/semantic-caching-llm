@@ -1,0 +1,121 @@
+﻿threshold,id,query,expected_group,source,retrieved_query,retrieved_group,similarity_score,classification
+0.85,1,What is machine learning?,machine_learning,llm,,,,TN
+0.85,2,Define machine learning,machine_learning,cache,What is machine learning?,machine_learning,0.9114,TP
+0.85,3,Explain machine learning,machine_learning,llm,,,,TN
+0.85,4,What does machine learning mean?,machine_learning,cache,What is machine learning?,machine_learning,0.9443,TP
+0.85,5,How does machine learning work?,machine_learning,cache,Explain machine learning,machine_learning,0.8536,TP
+0.85,6,What is semantic caching?,semantic_caching,llm,,,,TN
+0.85,7,Define semantic caching,semantic_caching,cache,What is semantic caching?,semantic_caching,0.9638,TP
+0.85,8,Explain semantic caching,semantic_caching,cache,What is semantic caching?,semantic_caching,0.942,TP
+0.85,9,How does semantic caching work?,semantic_caching,cache,What is semantic caching?,semantic_caching,0.9531,TP
+0.85,10,What does semantic cache mean?,semantic_caching,cache,What is semantic caching?,semantic_caching,0.9159,TP
+0.85,11,What is an algorithm?,algorithms,llm,,,,TN
+0.85,12,Define an algorithm,algorithms,cache,What is an algorithm?,algorithms,0.9486,TP
+0.85,13,Explain algorithms,algorithms,llm,,,,TN
+0.85,14,What does an algorithm mean?,algorithms,cache,What is an algorithm?,algorithms,0.9507,TP
+0.85,15,What are algorithms used for?,algorithms,llm,,,,TN
+0.85,16,What is a database?,databases,llm,,,,TN
+0.85,17,Define a database,databases,cache,What is a database?,databases,0.9331,TP
+0.85,18,Explain databases,databases,llm,,,,TN
+0.85,19,What does a database do?,databases,cache,What is a database?,databases,0.9214,TP
+0.85,20,Why are databases used?,databases,llm,,,,TN
+0.85,21,What is computer networking?,networking,llm,,,,TN
+0.85,22,Define computer networking,networking,cache,What is computer networking?,networking,0.9098,TP
+0.85,23,Explain computer networks,networking,llm,,,,TN
+0.85,24,What is networking?,networking,cache,What is computer networking?,networking,0.8799,TP
+0.85,25,How does computer networking work?,networking,llm,,,,TN
+0.85,26,What is photosynthesis?,other,llm,,,,TN
+0.85,27,What is gravity?,other,llm,,,,TN
+0.85,28,What is encryption?,other,llm,,,,TN
+0.85,29,What is cloud computing?,other,llm,,,,TN
+0.85,30,What is an operating system?,other,llm,,,,TN
+0.82,1,What is machine learning?,machine_learning,llm,,,,TN
+0.82,2,Define machine learning,machine_learning,cache,What is machine learning?,machine_learning,0.9114,TP
+0.82,3,Explain machine learning,machine_learning,cache,What is machine learning?,machine_learning,0.8413,TP
+0.82,4,What does machine learning mean?,machine_learning,cache,What is machine learning?,machine_learning,0.9443,TP
+0.82,5,How does machine learning work?,machine_learning,llm,,,,TN
+0.82,6,What is semantic caching?,semantic_caching,llm,,,,TN
+0.82,7,Define semantic caching,semantic_caching,cache,What is semantic caching?,semantic_caching,0.9638,TP
+0.82,8,Explain semantic caching,semantic_caching,cache,What is semantic caching?,semantic_caching,0.942,TP
+0.82,9,How does semantic caching work?,semantic_caching,cache,What is semantic caching?,semantic_caching,0.9531,TP
+0.82,10,What does semantic cache mean?,semantic_caching,cache,What is semantic caching?,semantic_caching,0.9159,TP
+0.82,11,What is an algorithm?,algorithms,llm,,,,TN
+0.82,12,Define an algorithm,algorithms,cache,What is an algorithm?,algorithms,0.9486,TP
+0.82,13,Explain algorithms,algorithms,llm,,,,TN
+0.82,14,What does an algorithm mean?,algorithms,cache,What is an algorithm?,algorithms,0.9507,TP
+0.82,15,What are algorithms used for?,algorithms,llm,,,,TN
+0.82,16,What is a database?,databases,llm,,,,TN
+0.82,17,Define a database,databases,cache,What is a database?,databases,0.9331,TP
+0.82,18,Explain databases,databases,cache,What is a database?,databases,0.8453,TP
+0.82,19,What does a database do?,databases,cache,What is a database?,databases,0.9214,TP
+0.82,20,Why are databases used?,databases,llm,,,,TN
+0.82,21,What is computer networking?,networking,llm,,,,TN
+0.82,22,Define computer networking,networking,cache,What is computer networking?,networking,0.9098,TP
+0.82,23,Explain computer networks,networking,llm,,,,TN
+0.82,24,What is networking?,networking,cache,What is computer networking?,networking,0.8799,TP
+0.82,25,How does computer networking work?,networking,cache,What is computer networking?,networking,0.8283,TP
+0.82,26,What is photosynthesis?,other,llm,,,,TN
+0.82,27,What is gravity?,other,llm,,,,TN
+0.82,28,What is encryption?,other,llm,,,,TN
+0.82,29,What is cloud computing?,other,llm,,,,TN
+0.82,30,What is an operating system?,other,llm,,,,TN
+0.8,1,What is machine learning?,machine_learning,llm,,,,TN
+0.8,2,Define machine learning,machine_learning,cache,What is machine learning?,machine_learning,0.9114,TP
+0.8,3,Explain machine learning,machine_learning,cache,What is machine learning?,machine_learning,0.8413,TP
+0.8,4,What does machine learning mean?,machine_learning,cache,What is machine learning?,machine_learning,0.9443,TP
+0.8,5,How does machine learning work?,machine_learning,cache,What is machine learning?,machine_learning,0.8198,TP
+0.8,6,What is semantic caching?,semantic_caching,llm,,,,TN
+0.8,7,Define semantic caching,semantic_caching,cache,What is semantic caching?,semantic_caching,0.9638,TP
+0.8,8,Explain semantic caching,semantic_caching,cache,What is semantic caching?,semantic_caching,0.942,TP
+0.8,9,How does semantic caching work?,semantic_caching,cache,What is semantic caching?,semantic_caching,0.9531,TP
+0.8,10,What does semantic cache mean?,semantic_caching,cache,What is semantic caching?,semantic_caching,0.9159,TP
+0.8,11,What is an algorithm?,algorithms,llm,,,,TN
+0.8,12,Define an algorithm,algorithms,cache,What is an algorithm?,algorithms,0.9486,TP
+0.8,13,Explain algorithms,algorithms,llm,,,,TN
+0.8,14,What does an algorithm mean?,algorithms,cache,What is an algorithm?,algorithms,0.9507,TP
+0.8,15,What are algorithms used for?,algorithms,cache,What is an algorithm?,algorithms,0.8044,TP
+0.8,16,What is a database?,databases,llm,,,,TN
+0.8,17,Define a database,databases,cache,What is a database?,databases,0.9331,TP
+0.8,18,Explain databases,databases,cache,What is a database?,databases,0.8453,TP
+0.8,19,What does a database do?,databases,cache,What is a database?,databases,0.9214,TP
+0.8,20,Why are databases used?,databases,llm,,,,TN
+0.8,21,What is computer networking?,networking,llm,,,,TN
+0.8,22,Define computer networking,networking,cache,What is computer networking?,networking,0.9098,TP
+0.8,23,Explain computer networks,networking,cache,What is computer networking?,networking,0.8041,TP
+0.8,24,What is networking?,networking,cache,What is computer networking?,networking,0.8799,TP
+0.8,25,How does computer networking work?,networking,cache,What is computer networking?,networking,0.8283,TP
+0.8,26,What is photosynthesis?,other,llm,,,,TN
+0.8,27,What is gravity?,other,llm,,,,TN
+0.8,28,What is encryption?,other,llm,,,,TN
+0.8,29,What is cloud computing?,other,llm,,,,TN
+0.8,30,What is an operating system?,other,llm,,,,TN
+0.75,1,What is machine learning?,machine_learning,llm,,,,TN
+0.75,2,Define machine learning,machine_learning,cache,What is machine learning?,machine_learning,0.9114,TP
+0.75,3,Explain machine learning,machine_learning,cache,What is machine learning?,machine_learning,0.8413,TP
+0.75,4,What does machine learning mean?,machine_learning,cache,What is machine learning?,machine_learning,0.9443,TP
+0.75,5,How does machine learning work?,machine_learning,cache,What is machine learning?,machine_learning,0.8198,TP
+0.75,6,What is semantic caching?,semantic_caching,llm,,,,TN
+0.75,7,Define semantic caching,semantic_caching,cache,What is semantic caching?,semantic_caching,0.9638,TP
+0.75,8,Explain semantic caching,semantic_caching,cache,What is semantic caching?,semantic_caching,0.942,TP
+0.75,9,How does semantic caching work?,semantic_caching,cache,What is semantic caching?,semantic_caching,0.9531,TP
+0.75,10,What does semantic cache mean?,semantic_caching,cache,What is semantic caching?,semantic_caching,0.9159,TP
+0.75,11,What is an algorithm?,algorithms,llm,,,,TN
+0.75,12,Define an algorithm,algorithms,cache,What is an algorithm?,algorithms,0.9486,TP
+0.75,13,Explain algorithms,algorithms,cache,What is an algorithm?,algorithms,0.7872,TP
+0.75,14,What does an algorithm mean?,algorithms,cache,What is an algorithm?,algorithms,0.9507,TP
+0.75,15,What are algorithms used for?,algorithms,cache,What is an algorithm?,algorithms,0.8044,TP
+0.75,16,What is a database?,databases,llm,,,,TN
+0.75,17,Define a database,databases,cache,What is a database?,databases,0.9331,TP
+0.75,18,Explain databases,databases,cache,What is a database?,databases,0.8453,TP
+0.75,19,What does a database do?,databases,cache,What is a database?,databases,0.9214,TP
+0.75,20,Why are databases used?,databases,llm,,,,TN
+0.75,21,What is computer networking?,networking,llm,,,,TN
+0.75,22,Define computer networking,networking,cache,What is computer networking?,networking,0.9098,TP
+0.75,23,Explain computer networks,networking,cache,What is computer networking?,networking,0.8041,TP
+0.75,24,What is networking?,networking,cache,What is computer networking?,networking,0.8799,TP
+0.75,25,How does computer networking work?,networking,cache,What is computer networking?,networking,0.8283,TP
+0.75,26,What is photosynthesis?,other,llm,,,,TN
+0.75,27,What is gravity?,other,llm,,,,TN
+0.75,28,What is encryption?,other,llm,,,,TN
+0.75,29,What is cloud computing?,other,llm,,,,TN
+0.75,30,What is an operating system?,other,llm,,,,TN

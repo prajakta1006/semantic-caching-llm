@@ -1,17 +1,19 @@
+
 """Central configuration for the semantic caching project."""
 
 from dataclasses import dataclass, field
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+# Load local environment variables before creating AppConfig.
+load_dotenv()
+
 
 @dataclass
 class AppConfig:
     """Application-wide configuration."""
-
-    # ---------------------------------------------------------
-    # Project
-    # ---------------------------------------------------------
 
     project_name: str = (
         "Semantic Caching for LLM - Cost and Latency Optimization"
@@ -21,16 +23,11 @@ class AppConfig:
 
     debug: bool = field(
         default_factory=lambda: os.getenv(
-            "DEBUG",
-            "false",
+            "DEBUG", "false"
         ).lower() in ("true", "1", "yes")
     )
 
-    # ---------------------------------------------------------
     # Semantic cache configuration
-    # Owned by TanTan / used through CacheInterface
-    # ---------------------------------------------------------
-
     embedding_model_name: str = field(
         default_factory=lambda: os.getenv(
             "EMBEDDING_MODEL_NAME",
@@ -40,17 +37,11 @@ class AppConfig:
 
     similarity_threshold: float = field(
         default_factory=lambda: float(
-            os.getenv(
-                "SIMILARITY_THRESHOLD",
-                "0.85",
-            )
+            os.getenv("SIMILARITY_THRESHOLD", "0.85")
         )
     )
 
-    # ---------------------------------------------------------
     # Cache storage
-    # ---------------------------------------------------------
-
     cache_dir: Path = field(
         default_factory=lambda: Path(
             os.getenv(
@@ -63,22 +54,22 @@ class AppConfig:
         )
     )
 
-    # ---------------------------------------------------------
     # LLM configuration
-    # Owned by Dhano
-    # ---------------------------------------------------------
-
     llm_provider: str = field(
         default_factory=lambda: os.getenv(
-            "LLM_PROVIDER",
-            "mock",
-        )
+            "LLM_PROVIDER", "mock"
+        ).strip().lower()
     )
 
     default_llm_model: str = field(
         default_factory=lambda: os.getenv(
             "DEFAULT_LLM_MODEL",
-            "mock-llm-v1",
+            (
+                "gemini-3.8-flash"
+                if os.getenv("LLM_PROVIDER", "mock").strip().lower()
+                == "gemini"
+                else "mock-llm-v1"
+            ),
         )
     )
 
@@ -91,10 +82,7 @@ class AppConfig:
 
     llm_timeout_seconds: float = field(
         default_factory=lambda: float(
-            os.getenv(
-                "LLM_TIMEOUT_SECONDS",
-                "30",
-            )
+            os.getenv("LLM_TIMEOUT_SECONDS", "30")
         )
     )
 

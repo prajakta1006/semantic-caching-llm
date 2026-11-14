@@ -280,3 +280,178 @@ def test_benchmark_dataset_loading():
     assert len(dataset) >= 30
     assert any(item["group"] == "machine_learning" for item in dataset)
     assert any(item["group"] == "semantic_caching" for item in dataset)
+
+
+
+def test_evaluator_tracks_failed_llm_generation():
+    tracker = EvaluationTracker()
+    request = QueryRequest(query="test query")
+
+    response = PipelineResponse(
+        query="test query",
+        response_text="LLM unavailable",
+        source="error",
+        decision=DecisionResult(route="LLM_ERROR"),
+        latency_ms=5000.0,
+        metadata={
+            "llm_call_attempted": True,
+            "llm_call_succeeded": False,
+            "llm_call_failed": True,
+            "llm_error": "Simulated timeout",
+        },
+    )
+
+    tracker.record(request, response, 5000.0)
+
+    metrics = tracker.get_metrics()
+
+    assert metrics.total_queries == 1
+    assert metrics.cache_hits == 0
+    assert metrics.cache_misses == 1
+
+    assert metrics.metadata["llm_calls"] == 0
+    assert metrics.metadata["llm_call_attempts"] == 1
+    assert metrics.metadata["llm_calls_failed"] == 1
+
+
+def test_evaluator_separates_successful_and_failed_calls():
+    tracker = EvaluationTracker()
+    request = QueryRequest(query="test query")
+
+    successful = PipelineResponse(
+        query="test query",
+        response_text="Generated answer",
+        source="llm",
+        metadata={
+            "cost": 0.002,
+            "llm_call_attempted": True,
+            "llm_call_succeeded": True,
+            "llm_call_failed": False,
+        },
+    )
+
+    failed = PipelineResponse(
+        query="test query",
+        response_text="LLM unavailable",
+        source="error",
+        metadata={
+            "llm_call_attempted": True,
+            "llm_call_succeeded": False,
+            "llm_call_failed": True,
+        },
+    )
+
+    tracker.record(request, successful, 100.0)
+    tracker.record(request, failed, 5000.0)
+
+    metrics = tracker.get_metrics()
+
+    assert metrics.total_queries == 2
+    assert metrics.cache_misses == 2
+    assert metrics.metadata["llm_calls"] == 1
+    assert metrics.metadata["llm_call_attempts"] == 2
+    assert metrics.metadata["llm_calls_failed"] == 1
+
+
+def test_evaluator_tracks_fallback_attempt_separately_from_success():
+    tracker = EvaluationTracker()
+    request = QueryRequest(query="fallback test")
+
+    failed_fallback = PipelineResponse(
+        query="fallback test",
+        response_text="LLM unavailable",
+        source="error",
+        metadata={
+            "llm_call_attempted": True,
+            "llm_call_succeeded": False,
+            "llm_call_failed": True,
+            "llm_metadata": {
+                "request_attempts": 3,
+                "retry_count": 1,
+                "fallback_attempted": True,
+                "fallback_used": False,
+            },
+        },
+    )
+
+    successful_fallback = PipelineResponse(
+        query="fallback test 2",
+        response_text="Generated using fallback",
+        source="llm",
+        metadata={
+            "llm_call_attempted": True,
+            "llm_call_succeeded": True,
+            "llm_call_failed": False,
+            "llm_metadata": {
+                "request_attempts": 3,
+                "retry_count": 1,
+                "fallback_attempted": True,
+                "fallback_used": True,
+            },
+        },
+    )
+
+    tracker.record(request, failed_fallback, 100.0)
+    tracker.record(
+        QueryRequest(query="fallback test 2"),
+        successful_fallback,
+        120.0,
+    )
+
+    records = tracker.records()
+
+    assert records[0].fallback_attempted is True
+    assert records[0].fallback_used is False
+
+    assert records[1].fallback_attempted is True
+    assert records[1].fallback_used is True
+
+    metrics = tracker.get_metrics().metadata
+
+    assert metrics["http_attempts"] == 6
+    assert metrics["retry_count"] == 2
+    assert metrics["fallback_attempt_count"] == 2
+    assert metrics["fallback_count"] == 1
+
+
+def test_evaluator_records_http_attempts_from_failed_pipeline():
+    tracker = EvaluationTracker()
+
+    response = PipelineResponse(
+        query="HTTP failure test",
+        response_text="LLM unavailable",
+        source="error",
+        metadata={
+            "llm_call_attempted": True,
+            "llm_call_succeeded": False,
+            "llm_call_failed": True,
+            "llm_metadata": {
+                "provider": "gemini",
+                "request_attempts": 3,
+                "retry_count": 1,
+                "fallback_attempted": True,
+                "fallback_used": False,
+            },
+        },
+    )
+
+    tracker.record(
+        QueryRequest(query="HTTP failure test"),
+        response,
+        5000.0,
+    )
+
+    record = tracker.records()[0]
+    metrics = tracker.get_metrics().metadata
+
+    assert record.http_attempts == 3
+    assert record.retry_count == 1
+    assert record.fallback_attempted is True
+    assert record.fallback_used is False
+
+    assert metrics["llm_call_attempts"] == 1
+    assert metrics["llm_calls_failed"] == 1
+    assert metrics["http_attempts"] == 3
+    assert metrics["retry_count"] == 1
+    assert metrics["fallback_attempt_count"] == 1
+    assert metrics["fallback_count"] == 0
