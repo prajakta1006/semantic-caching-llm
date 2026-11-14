@@ -43,3 +43,8 @@ def test_dimension_mismatch_is_rejected():
             [1.0, 0.0],
             [1.0],
         )
+
+
+def test_non_finite_vector_values_are_rejected():
+    with pytest.raises(ValueError, match="finite"):
+        cosine_similarity([1.0, float("nan")], [1.0, 0.0])

@@ -1,210 +1,63 @@
-# Semantic Caching for LLM - Cost-Benefit Cascade Flow
+# Semantic Caching for LLM Applications
 
-A DAA (Design and Analysis of Algorithms) course project that studies how semantic caching, routing decisions, and evaluation metrics can reduce repeated LLM cost and latency.
+A DAA course project that reuses responses to repeated or semantically similar queries. The current implementation includes an embedding-backed cache, LRU and TTL management, optional MongoDB persistence, a mock LLM, a pipeline, and evaluation scripts.
 
-## Current Status
-
-The foundation is implemented and tested. The project currently provides:
-
-- A modular end-to-end pipeline coordinator.
-- Clean interfaces for cache, cascade, LLM, and evaluator components.
-- Dependency injection so teammates can plug in their modules later.
-- A working exact-match mock cache.
-- A deterministic mock LLM.
-- A default cascade placeholder.
-- A basic metrics recorder.
-- CLI demo, lightweight web API, and existing UI.
-- Unit/integration tests for the foundation.
-
-The following teammate-owned algorithms are intentionally not implemented yet:
-
-- Semantic embedding search.
-- Cosine similarity or FAISS/vector indexing.
-- Cost-benefit cascade optimization.
-- Full benchmarking/evaluation analysis.
-
-## Architecture
+## Request flow
 
 ```text
-User Query
-    |
-    v
-Query Preprocessing
-    |
-    v
-Cache.get(query, threshold)
-    |
-    +-- HIT --> Return cached response
-    |
-    +-- MISS
-          |
-          v
-      Cascade.decide(query)
-          |
-          v
-      LLM.generate(query, selected_model)
-          |
-          v
-      Cache.put(query, response)
-          |
-          v
-      Evaluator.record(...)
-          |
-          v
-      Return response
+Query -> trim whitespace -> embed -> cosine similarity against cache entries
+      -> hit at/above SIMILARITY_THRESHOLD: return stored response
+      -> miss: call configured pipeline LLM -> store response -> return it
 ```
 
-## Team Responsibilities
+`SemanticCachingPipeline` depends on the interfaces in `src/interfaces.py`. `SemanticCache` owns embedding generation, cosine matching, and entry storage. `CacheOptimizer` wraps it with capacity, LRU and optional TTL rules. MongoDB is injected as a storage backend; with no store, the cache is in memory.
 
-| Person | Responsibility | Integration Point |
-| --- | --- | --- |
-| Tanishka | integration testing, threshold behavior, cosine similarity  | `src/pipeline.py`, `src/interfaces.py`, `src/components.py`, `src/config.py` |
-| Dhanashree | LLM Foundation & Integration, pipeline, query processing and cache-LLM flow | Implement `CacheInterface` |
-| Prajakta | Cache Optimization - LRU, TTL, replacement policy, complexity | Implement CacheInterface' |
-| Anuja | Evaluation, benchmarks, metrics, experimental analysis | Implement `EvaluatorInterface` |
+## DAA algorithms and costs
 
-## Project Structure
+- **Cosine similarity:** compares a query vector with each stored vector. A lookup costs O(n·d), where n is the number of entries and d is the embedding dimension; it uses O(d) temporary space. Query embedding time depends on the selected model and is additional to that scan.
+- **Hashing:** `SemanticCache` maintains a dictionary keyed by the exact query for expected O(1) exact lookup. Replacing an existing record also updates the ordered semantic-search list, which costs O(n). This index does not accelerate nearest-neighbor semantic search.
+- **LRU:** `CacheOptimizer` uses an `OrderedDict`; successful hits move an entry to the most-recently-used end in O(1), and victim selection is O(1). Removing the victim from the semantic cache's list takes O(n).
+- **LFU metadata:** successful hit counts are tracked and persisted for reporting or future policies. The current eviction decision is LRU, not LFU.
+- **TTL:** expired entries are scanned and removed during cache operations, O(n) per expiration check. Capacity is enforced after insertion so the cache does not remain over its configured maximum.
+- **Storage:** embeddings and responses take O(n·d + response data) space. No heap or FAISS index is currently used.
 
-```text
-semantic-caching-llm/
-|-- cache/
-|   `-- .gitkeep
-|-- src/
-|   |-- __init__.py
-|   |-- components.py      # Default/mock component implementations
-|   |-- config.py          # Environment-backed settings
-|   |-- interfaces.py      # Component contracts for teammates
-|   |-- main.py            # CLI demo
-|   |-- models.py          # Dataclasses used across components
-|   |-- pipeline.py        # TanTan orchestration layer
-|   `-- server.py          # Lightweight API/static UI server
-|-- tests/
-|   |-- __init__.py
-|   |-- test_pipeline_integration.py
-|   `-- test_setup.py
-|-- ui/
-|   |-- app.js
-|   |-- index.html
-|   `-- style.css
-|-- requirements.txt
-|-- run.py
-`-- README.md
-```
+An exact duplicate query replaces its existing record. Different query strings remain distinct entries even when their embeddings are similar; similarity determines reads, and no response-merging rule is imposed on writes.
 
-## Setup
+## MongoDB persistence
+
+`src/mongo_cache_store.py` persists cache entries in the existing collection shape, using the exact query as `_id`. Configure `MONGODB_URI`, and optionally `MONGODB_DATABASE` (default `semantic_cache_db`) and `MONGODB_COLLECTION` (default `cache_entries`) in the environment or project-root `.env`. Keep credentials out of source control. `MongoCacheStore(collection=...)` supports offline tests with an injected collection. Persistence errors are surfaced by the store; the pipeline catches cache-write errors so an LLM response can still be returned.
+
+## LLM and evaluation status
+
+`MockLLM` and `LLMService` are deterministic local implementations and require no API key. The inspected `src/llm.py` does not currently contain Gemini integration; do not infer live Gemini compatibility from the mock. The pipeline accepts another `LLMInterface` implementation by dependency injection.
+
+Evaluation code lives in `evaluation/`. `evaluation/benchmark.py` uses a real SentenceTransformer embedding model and a simulated MockLLM; it makes no live LLM calls. Existing files in `evaluation/results/` are saved measurements from an earlier run and are not regenerated by tests.
+
+## Setup and run
 
 ```powershell
 python -m venv .venv
 .venv\Scripts\Activate.ps1
-pip install --upgrade pip
 pip install -r requirements.txt
-```
-
-## Run
-
-CLI demo:
-
-```powershell
 python run.py
 ```
 
-Web UI:
+The web UI can be started with `python run.py --ui`. The current `run.py` demo connects to MongoDB and therefore requires `MONGODB_URI`; using `SemanticCache` directly without a store and using MockLLM do not require credentials. The embedding model may need to be downloaded the first time a real `EmbeddingGenerator` is initialized.
+
+Run the offline automated suite with:
 
 ```powershell
-python run.py --ui
+python -m pytest tests
 ```
 
-Then open:
+The root-level `test_mongodb_connection.py` is a separate live connectivity check. It requires `MONGODB_URI` and is not part of the offline suite.
 
-```text
-http://localhost:8000
-```
+## Project modules
 
-Tests:
-
-```powershell
-python -m pytest
-```
-
-## Interfaces
-
-The main contracts live in `src/interfaces.py`.
-
-Cache:
-
-```python
-class CacheInterface:
-    def get(self, query: str, threshold: float) -> CacheEntry | None: ...
-    def put(self, query: str, response: str, embedding=None, metadata=None) -> None: ...
-    def size(self) -> int: ...
-```
-
-Cascade:
-
-```python
-class CascadeInterface:
-    def decide(self, request: QueryRequest, config: AppConfig) -> DecisionResult: ...
-```
-
-LLM:
-
-```python
-class LLMInterface:
-    def generate(self, query: str, model: str | None = None) -> LLMResponse: ...
-```
-
-Evaluator:
-
-```python
-class EvaluatorInterface:
-    def record(self, request: QueryRequest, response: PipelineResponse, latency_ms: float) -> None: ...
-    def get_metrics(self) -> EvaluationMetrics: ...
-```
-
-The pipeline accepts injected components:
-
-```python
-pipeline = SemanticCachingPipeline(
-    cache=YourCache(),
-    cascade=YourCascade(),
-    llm=YourLLM(),
-    evaluator=YourEvaluator(),
-)
-```
-
-## Configuration
-
-Settings are read from environment variables with safe local defaults.
-
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `EMBEDDING_MODEL_NAME` | `all-MiniLM-L6-v2` | Future embedding model target for Dhano |
-| `SIMILARITY_THRESHOLD` | `0.85` | Cache hit threshold |
-| `CASCADE_COST_THRESHOLD` | `0.05` | Future cascade cost setting for Praj |
-| `CASCADE_QUALITY_THRESHOLD` | `0.75` | Future cascade quality setting for Praj |
-| `CACHE_DIR` | `./cache` | Local cache directory |
-| `LLM_PROVIDER` | `mock` | Future provider selector |
-| `DEFAULT_LLM_MODEL` | `mock-llm-v1` | Default model name |
-| `LLM_API_KEY_ENV` | `LLM_API_KEY` | Name of env var a future API LLM can read |
-| `LLM_TIMEOUT_SECONDS` | `30` | Future API timeout |
-| `DEBUG` | `false` | Debug flag |
-
-No paid API key is required for the current demo. `LLM_PROVIDER=mock` is the default.
-
-## Current Limitations
-
-- `ExactMatchCache` is only an in-memory exact-match adapter.
-- It does not generate embeddings.
-- It does not compute cosine similarity.
-- It does not use FAISS or a vector database.
-- `DefaultCascade` always routes cache misses to the default mock LLM.
-- `BasicEvaluator` records only simple session metrics.
-- The UI remains a lightweight demo and was not redesigned.
-
-## Handoff Notes
-
-Dhano should implement `CacheInterface` in a new module such as `src/cache.py`. The pipeline will call only `get`, `put`, and `size`.
-
-Praj should implement `CascadeInterface` in a new module such as `src/cascade.py`. Return `DecisionResult` with `metadata["selected_model"]` when selecting a model/path.
-
-Andi should implement `EvaluatorInterface` in a new module such as `src/evaluator.py`. Use `record(...)` for telemetry and `get_metrics()` for reports.
+- `src/semantic_cache.py`: embedding-backed cache, threshold matching, exact-query index, CRUD helpers.
+- `src/embeddings.py`, `src/similarity.py`: SentenceTransformer adapter and cosine similarity.
+- `src/cache_optimizer.py`: LRU, TTL, capacity and access-frequency tracking.
+- `src/mongo_cache_store.py`: optional MongoDB persistence.
+- `src/pipeline.py`, `src/llm.py`: cache/LLM orchestration and mock implementation.
+- `src/evaluator.py`, `evaluation/`: runtime metrics and offline analysis.
+- `tests/`: unit and integration tests, including mock persistence adapters.

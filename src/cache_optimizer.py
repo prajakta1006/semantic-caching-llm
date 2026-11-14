@@ -407,6 +407,10 @@ class CacheOptimizer(CacheInterface):
     ) -> Optional[str]:
         """Find an exact query currently stored in the cache."""
 
+        exact_lookup = getattr(self.cache, "get_exact_entry", None)
+        if callable(exact_lookup):
+            return query if exact_lookup(query) is not None else None
+
         entries_method = getattr(self.cache, "entries", None)
 
         if not callable(entries_method):

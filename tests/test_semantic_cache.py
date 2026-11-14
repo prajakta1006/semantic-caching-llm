@@ -48,6 +48,26 @@ def test_cache_put_increases_size():
     assert cache.size() == 1
 
 
+def test_put_replaces_exact_duplicate_without_growing_cache():
+    cache = SemanticCache(embedding_generator=FakeEmbeddingGenerator())
+    cache.put("what is machine learning?", "old answer")
+    cache.put("what is machine learning?", "updated answer")
+
+    assert cache.size() == 1
+    assert cache.get("what is machine learning?", 1.0).response == "updated answer"
+    assert cache.get_exact_entry("what is machine learning?").response == "updated answer"
+
+
+def test_get_skips_persisted_embedding_with_incompatible_dimensions():
+    cache = SemanticCache(embedding_generator=FakeEmbeddingGenerator())
+    cache.put("legacy query", "legacy answer", embedding=[1.0, 0.0, 0.0])
+    cache.put("what is pizza?", "pizza answer", embedding=[0.0, 1.0])
+
+    result = cache.get("what is pizza?", 0.99)
+    assert result is not None
+    assert result.response == "pizza answer"
+
+
 def test_semantic_cache_returns_similar_query():
 
     cache = SemanticCache(
