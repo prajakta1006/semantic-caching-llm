@@ -3,6 +3,7 @@
 Evaluates pipeline performance when all queries bypass the semantic cache
 and are routed directly to the LLM.
 """
+
 import time
 from typing import Any, Dict, List, Optional, Union
 
@@ -17,20 +18,11 @@ def run_baseline(
     llm: Optional[LLMInterface] = None,
     evaluator: Optional[EvaluatorInterface] = None,
 ) -> Dict[str, Any]:
-    """Run evaluation dataset without caching (direct LLM calls).
+    """Run the evaluation dataset without caching."""
 
-    Args:
-        queries: List of query strings or dataset query dicts.
-        llm: Optional LLM implementation (defaults to MockLLM).
-        evaluator: Optional evaluator instance (defaults to fresh EvaluationTracker).
-
-    Returns:
-        Dict containing baseline metrics and per-query execution details.
-    """
     tracker = evaluator if evaluator is not None else EvaluationTracker()
     llm_service = llm if llm is not None else MockLLM()
 
-    # Create pipeline with NO cache connected (cache=None)
     pipeline = SemanticCachingPipeline(
         cache=None,
         llm=llm_service,
@@ -38,12 +30,13 @@ def run_baseline(
     )
 
     query_details: List[Dict[str, Any]] = []
+    experiment_start = time.perf_counter()
 
     for item in queries:
         if isinstance(item, dict):
             query_str = item.get("query", "")
             group = item.get("group", "unknown")
-            q_id = item.get("id", None)
+            q_id = item.get("id")
         else:
             query_str = str(item)
             group = "unknown"
@@ -72,22 +65,39 @@ def run_baseline(
             }
         )
 
+    total_elapsed_seconds = time.perf_counter() - experiment_start
     metrics = tracker.get_metrics()
+    metric_data = metrics.metadata
+
+    total_latency_ms = sum(d["latency_ms"] for d in query_details)
+    total_queries = len(query_details)
 
     return {
-        "total_queries": metrics.total_queries,
-        "llm_calls": metrics.cache_misses,
-        "total_latency_ms": sum(d["latency_ms"] for d in query_details),
+        "total_queries": total_queries,
 
+        # Successful generations, not merely cache misses.
+        "llm_calls": metric_data.get("llm_calls", 0),
+        "llm_call_attempts": metric_data.get("llm_call_attempts", 0),
+        "llm_calls_failed": metric_data.get("llm_calls_failed", 0),
+        "http_attempts": metric_data.get("http_attempts", 0),
+        "retry_count": metric_data.get("retry_count", 0),
+        "fallback_attempt_count": metric_data.get("fallback_attempt_count", 0),
+        "fallback_count": metric_data.get("fallback_count", 0),
+
+        "total_latency_ms": total_latency_ms,
         "avg_latency_ms": (
-            sum(d["latency_ms"] for d in query_details) / len(query_details)
-            if query_details
+            total_latency_ms / total_queries if total_queries else 0.0
+        ),
+        "total_elapsed_seconds": total_elapsed_seconds,
+        "throughput_queries_per_second": (
+            total_queries / total_elapsed_seconds
+            if total_elapsed_seconds > 0
             else 0.0
         ),
 
         "estimated_cost": (
-            metrics.metadata.get("total_estimated_cost")
-            or metrics.metadata.get("estimated_cost_with_caching", 0.0)
+            metric_data.get("total_estimated_cost")
+            or metric_data.get("estimated_cost_with_caching", 0.0)
         ),
         "query_results": query_details,
         "metrics": metrics,

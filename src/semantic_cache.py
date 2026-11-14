@@ -54,10 +54,20 @@ class SemanticCache(CacheInterface):
         # When no store is supplied, the cache remains in memory only.
         self.store = store
         self._entries: List[CacheEntry] = []
+        # Exact-query operations use this hash index; semantic search still
+        # scans the entries because every vector may be a nearest match.
+        self._entry_by_query: dict[str, CacheEntry] = {}
 
         # Restore previously persisted entries when a store is supplied.
         if self.store is not None:
             self._entries = self.store.load_entries()
+            # Be tolerant of legacy stores containing repeated query records.
+            # Keep the newest record and make memory match the exact-query key.
+            unique_entries: dict[str, CacheEntry] = {}
+            for entry in self._entries:
+                unique_entries[entry.query] = entry
+            self._entries = list(unique_entries.values())
+        self._entry_by_query = {entry.query: entry for entry in self._entries}
 
     def _persist_entry(self, entry: CacheEntry) -> None:
         """Persist only the newly added or updated cache entry."""
@@ -93,7 +103,9 @@ class SemanticCache(CacheInterface):
                 "query cannot be empty"
             )
 
-        if not 0.0 <= threshold <= 1.0:
+        if isinstance(threshold, bool) or not isinstance(threshold, (int, float)):
+            raise TypeError("threshold must be numeric")
+        if not math.isfinite(threshold) or not 0.0 <= threshold <= 1.0:
             raise ValueError(
                 "threshold must be between 0.0 and 1.0"
             )
@@ -101,9 +113,7 @@ class SemanticCache(CacheInterface):
         if not self._entries:
             return None
 
-        query_embedding = (
-            self.embedding_generator.encode(query)
-        )
+        query_embedding = self.embedding_generator.encode(query)
 
         best_entry: Optional[CacheEntry] = None
         best_score = -1.0
@@ -113,10 +123,12 @@ class SemanticCache(CacheInterface):
             if entry.embedding is None:
                 continue
 
-            score = cosine_similarity(
-                query_embedding,
-                entry.embedding,
-            )
+            try:
+                score = cosine_similarity(query_embedding, entry.embedding)
+            except (TypeError, ValueError):
+                # A malformed or legacy persisted vector must not make all
+                # otherwise valid cache lookups fail.
+                continue
 
             if score > best_score:
                 best_score = score
@@ -202,7 +214,12 @@ class SemanticCache(CacheInterface):
         )
 
     # Store in memory and MongoDB
-        self._entries.append(entry)
+        existing = self._entry_by_query.get(query)
+        if existing is None:
+            self._entries.append(entry)
+        else:
+            self._entries[self._entries.index(existing)] = entry
+        self._entry_by_query[query] = entry
         self._persist_entry(entry)
 
 
@@ -218,6 +235,7 @@ class SemanticCache(CacheInterface):
         """
 
         self._entries.clear()
+        self._entry_by_query.clear()
 
         if self.store is not None:
             self.store.clear()
@@ -229,6 +247,7 @@ class SemanticCache(CacheInterface):
             entry for entry in self._entries
             if entry.query != query
         ]
+        self._entry_by_query.pop(query, None)
 
         if self.store is not None:
             self.store.delete_entry(query)
@@ -240,6 +259,10 @@ class SemanticCache(CacheInterface):
         """
 
         return list(self._entries)
+
+    def get_exact_entry(self, query: str) -> Optional[CacheEntry]:
+        """Return an exact-query entry in expected O(1) time."""
+        return self._entry_by_query.get(query)
 
     def update_metadata(
         self,

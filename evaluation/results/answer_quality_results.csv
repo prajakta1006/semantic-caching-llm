@@ -1,0 +1,31 @@
+﻿id,query,expected_group,source,retrieved_query,retrieved_group,similarity_score,classification,response
+1,What is machine learning?,machine_learning,llm,,,,TN,Machine learning is a field of artificial intelligence that enables systems to learn patterns from data and improve their performance without being explicitly programmed for every task.
+2,Define machine learning,machine_learning,cache,What is machine learning?,machine_learning,0.9114,TP,Machine learning is a field of artificial intelligence that enables systems to learn patterns from data and improve their performance without being explicitly programmed for every task.
+3,Explain machine learning,machine_learning,llm,,,0.8413,TN,Simulated LLM response for query: 'Explain machine learning'
+4,What does machine learning mean?,machine_learning,cache,What is machine learning?,machine_learning,0.9443,TP,Machine learning is a field of artificial intelligence that enables systems to learn patterns from data and improve their performance without being explicitly programmed for every task.
+5,How does machine learning work?,machine_learning,cache,Explain machine learning,machine_learning,0.8536,TP,Simulated LLM response for query: 'Explain machine learning'
+6,What is semantic caching?,semantic_caching,llm,,,0.2154,TN,Semantic caching stores query-response pairs together with vector representations so that semantically similar future queries can reuse previous responses.
+7,Define semantic caching,semantic_caching,cache,What is semantic caching?,semantic_caching,0.9638,TP,Semantic caching stores query-response pairs together with vector representations so that semantically similar future queries can reuse previous responses.
+8,Explain semantic caching,semantic_caching,cache,What is semantic caching?,semantic_caching,0.942,TP,Semantic caching stores query-response pairs together with vector representations so that semantically similar future queries can reuse previous responses.
+9,How does semantic caching work?,semantic_caching,cache,What is semantic caching?,semantic_caching,0.9531,TP,Semantic caching stores query-response pairs together with vector representations so that semantically similar future queries can reuse previous responses.
+10,What does semantic cache mean?,semantic_caching,cache,What is semantic caching?,semantic_caching,0.9159,TP,Semantic caching stores query-response pairs together with vector representations so that semantically similar future queries can reuse previous responses.
+11,What is an algorithm?,algorithms,llm,,,0.5525,TN,An algorithm is a finite sequence of well-defined steps used to solve a problem or perform a computation.
+12,Define an algorithm,algorithms,cache,What is an algorithm?,algorithms,0.9486,TP,An algorithm is a finite sequence of well-defined steps used to solve a problem or perform a computation.
+13,Explain algorithms,algorithms,llm,,,0.7872,TN,Simulated LLM response for query: 'Explain algorithms'
+14,What does an algorithm mean?,algorithms,cache,What is an algorithm?,algorithms,0.9507,TP,An algorithm is a finite sequence of well-defined steps used to solve a problem or perform a computation.
+15,What are algorithms used for?,algorithms,llm,,,0.8044,TN,Simulated LLM response for query: 'What are algorithms used for?'
+16,What is a database?,databases,llm,,,0.3425,TN,Simulated LLM response for query: 'What is a database?'
+17,Define a database,databases,cache,What is a database?,databases,0.9331,TP,Simulated LLM response for query: 'What is a database?'
+18,Explain databases,databases,llm,,,0.8453,TN,Simulated LLM response for query: 'Explain databases'
+19,What does a database do?,databases,cache,What is a database?,databases,0.9214,TP,Simulated LLM response for query: 'What is a database?'
+20,Why are databases used?,databases,llm,,,0.7778,TN,Simulated LLM response for query: 'Why are databases used?'
+21,What is computer networking?,networking,llm,,,0.3935,TN,Simulated LLM response for query: 'What is computer networking?'
+22,Define computer networking,networking,cache,What is computer networking?,networking,0.9098,TP,Simulated LLM response for query: 'What is computer networking?'
+23,Explain computer networks,networking,llm,,,0.8041,TN,Simulated LLM response for query: 'Explain computer networks'
+24,What is networking?,networking,cache,What is computer networking?,networking,0.8799,TP,Simulated LLM response for query: 'What is computer networking?'
+25,How does computer networking work?,networking,llm,,,0.8283,TN,Simulated LLM response for query: 'How does computer networking work?'
+26,What is photosynthesis?,other,llm,,,0.2297,TN,Simulated LLM response for query: 'What is photosynthesis?'
+27,What is gravity?,other,llm,,,0.2593,TN,Simulated LLM response for query: 'What is gravity?'
+28,What is encryption?,other,llm,,,0.3182,TN,Simulated LLM response for query: 'What is encryption?'
+29,What is cloud computing?,other,llm,,,0.4647,TN,Simulated LLM response for query: 'What is cloud computing?'
+30,What is an operating system?,other,llm,,,0.3758,TN,Simulated LLM response for query: 'What is an operating system?'

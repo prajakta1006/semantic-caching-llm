@@ -3,7 +3,7 @@
 Owned by TanTan.
 """
 
-from math import sqrt
+from math import isfinite, sqrt
 from typing import List
 
 
@@ -27,6 +27,12 @@ def cosine_similarity(
         raise ValueError(
             "Vectors must have the same dimension"
         )
+
+    for value in (*vector_a, *vector_b):
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise TypeError("Vector values must be numeric")
+        if not isfinite(value):
+            raise ValueError("Vector values must be finite")
 
     dot_product = sum(
         a * b
